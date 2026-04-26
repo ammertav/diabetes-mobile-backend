@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\AuthProvider;
 use App\Enums\DiabetesStatus;
 use App\Enums\Gender;
 use App\Enums\UserType;
@@ -36,7 +37,7 @@ class UserSeeder extends Seeder
 
         UserAuthProvider::create([
             'user_id' => $admin->id,
-            'provider' => 'email',
+            'provider' => AuthProvider::EMAIL,
             'provider_id' => 'admin@app.com',
             'password_hash' => Hash::make('Admin1234'),
         ]);
@@ -60,7 +61,7 @@ class UserSeeder extends Seeder
 
         UserAuthProvider::create([
             'user_id' => $user1->id,
-            'provider' => 'email',
+            'provider' => AuthProvider::EMAIL,
             'provider_id' => 'user@app.com',
             'password_hash' => Hash::make('User1234'),
         ]);
@@ -84,7 +85,7 @@ class UserSeeder extends Seeder
 
         UserAuthProvider::create([
             'user_id' => $user2->id,
-            'provider' => 'email',
+            'provider' => AuthProvider::EMAIL,
             'provider_id' => 'user2@app.com',
             'password_hash' => Hash::make('User1234'),
         ]);

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignUuid('user_id')
                 ->constrained()
                 ->cascadeOnDelete();
-            $table->enum('provider', ['email', 'google', 'apple']);
+            $table->string('provider');
             $table->string('provider_id')->nullable();
             $table->string('password_hash')->nullable();
             $table->timestamps();

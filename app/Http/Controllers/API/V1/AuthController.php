@@ -44,7 +44,7 @@ class AuthController extends Controller
 
             UserAuthProvider::create([
                 'user_id' => $user->id,
-                'provider' => 'email',
+                'provider' => \App\Enums\AuthProvider::EMAIL,
                 'provider_id' => $data['email'],
                 'password_hash' => Hash::make($data['password']),
             ]);

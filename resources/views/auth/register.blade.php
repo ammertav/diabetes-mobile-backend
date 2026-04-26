@@ -248,7 +248,7 @@
                     class="text-xs font-label text-on-surface-variant uppercase tracking-widest">
                     Already have an account?
                     <a class="text-primary font-bold ml-2 hover:underline"
-                        href="{{ 'login' }}">Back to Login</a>
+                        href="{{ 'login-page' }}">Back to Login</a>
                 </p>
             </div>
             <!-- Footer for focused screens -->

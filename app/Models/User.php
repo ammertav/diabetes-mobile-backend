@@ -21,6 +21,8 @@ class User extends Authenticatable
     use HasFactory, Notifiable, HasApiTokens, HasUuids;
 
     protected $guarded = ['id'];
+    protected $keyType = 'string';
+    public $incrementing = false;
 
     /**
      * Get the attributes that should be cast.
@@ -49,5 +51,12 @@ class User extends Authenticatable
     public function mobileProfile()
     {
         return $this->hasOne(MobileProfile::class);
+    }
+
+    public function emailProvider()
+    {
+        return $this->authProviders()
+            ->where('provider', \App\Enums\AuthProvider::EMAIL->value)
+            ->first();
     }
 }

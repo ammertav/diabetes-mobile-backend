@@ -2,14 +2,19 @@
 
 namespace App\Models;
 
+use App\Enums\AuthProvider;
 use Illuminate\Database\Eloquent\Model;
 
 class UserAuthProvider extends Model
 {
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'provider' => AuthProvider::class,
+    ];
+
     public function user()
     {
-        $this->belongsTo(User::class);
+        return $this->belongsTo(User::class);
     }
 }

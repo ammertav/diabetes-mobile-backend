@@ -140,7 +140,8 @@
                     <p class="text-on-surface-variant text-sm mt-2">Enter your
                         credentials to access the clinical dashboard.</p>
                 </div>
-                <form action="#" class="space-y-6" method="POST">
+                <form action="{{ route('login') }}" class="space-y-6"
+                    method="POST">
                     <!-- Email Field -->
                     <div class="space-y-2">
                         <label
@@ -194,7 +195,7 @@
                         institutional access?</p>
                     <button
                         class="font-label text-sm font-semibold text-primary px-6 py-2 rounded-full bg-surface-container-high hover:bg-surface-container-highest transition-colors">
-                        <a href="{{ 'register' }}">Register new
+                        <a href="{{ 'register-page' }}">Register new
                             account</a>
                     </button>
                 </div>
