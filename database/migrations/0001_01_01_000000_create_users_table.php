@@ -13,15 +13,9 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->unsignedInteger('age');
-            $table->enum('gender', ['male', 'female'])->nullable();
-            $table->enum('diabetes_status', ['t2dm', 'prediabetes', 'healthy']);
-            $table->decimal('bmi', 4, 1)->nullable();
-            $table->boolean('disclaimer_accepted');
-            $table->enum('role', ['admin', 'user']);
+            $table->string('type');
             $table->unsignedInteger('token_version')->default(1);
             $table->rememberToken();
             $table->timestamps();

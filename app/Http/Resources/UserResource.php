@@ -14,17 +14,24 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return [
+        $data = [
             'id' => $this->id,
             'email' => $this->email,
-            'name' => $this->name,
-            'age' => $this->age,
-            'gender' => $this->gender,
-            'diabetes_status' => $this->diabetes_status,
-            'bmi' => $this->bmi,
             'auth_provider' => $this->authProviders->map->provider,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
+
+        if ($this->type === \App\Enums\UserType::MOBILE && $this->mobileProfile) {
+            $data = array_merge($data, [
+                'name' => $this->mobileProfile->name,
+                'age' => $this->mobileProfile->age,
+                'gender' => $this->mobileProfile->gender,
+                'diabetes_status' => $this->mobileProfile->diabetes_status,
+                'bmi' => $this->mobileProfile->bmi,
+            ]);
+        }
+
+        return $data;
     }
 }

@@ -4,9 +4,9 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\Rules\Enum;
 
 class RegisterRequest extends FormRequest
 {
@@ -51,11 +51,11 @@ class RegisterRequest extends FormRequest
             ],
             'gender' => [
                 'required',
-                Rule::in(['male', 'female']),
+                new Enum(\App\Enums\Gender::class),
             ],
             'diabetes_status' => [
                 'required',
-                Rule::in(['t2dm', 'prediabetes', 'healthy']),
+                new Enum(\App\Enums\DiabetesStatus::class),
             ],
             'bmi' => [
                 'nullable',

@@ -2,6 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Enums\DiabetesStatus;
+use App\Enums\Gender;
+use App\Enums\UserType;
+use App\Models\AdminProfile;
+use App\Models\MobileProfile;
 use App\Models\User;
 use App\Models\UserAuthProvider;
 use Illuminate\Database\Seeder;
@@ -18,15 +23,15 @@ class UserSeeder extends Seeder
         // 🔥 ADMIN (web only)
         $admin = User::create([
             'id' => Str::uuid(),
-            'name' => 'Admin Main',
             'email' => 'admin@app.com',
-            'role' => 'admin',
+            'type' => UserType::ADMIN,
+        ]);
 
+        AdminProfile::create([
+            'user_id' => $admin->id,
+            'name' => 'Admin Main',
             'age' => 35,
-            'gender' => 'male',
-            'diabetes_status' => 't2dm',
-            'bmi' => 28.5,
-            'disclaimer_accepted' => true,
+            'gender' => Gender::MALE,
         ]);
 
         UserAuthProvider::create([
@@ -39,13 +44,16 @@ class UserSeeder extends Seeder
         // 🔥 MOBILE USER 1
         $user1 = User::create([
             'id' => Str::uuid(),
-            'name' => 'Mobile User',
             'email' => 'user@app.com',
-            'role' => 'user',
+            'type' => UserType::MOBILE,
+        ]);
 
+        MobileProfile::create([
+            'user_id' => $user1->id,
+            'name' => 'Mobile User',
             'age' => 29,
-            'gender' => 'female',
-            'diabetes_status' => 'prediabetes',
+            'gender' => Gender::FEMALE,
+            'diabetes_status' => DiabetesStatus::PREDIABETES,
             'bmi' => 24.3,
             'disclaimer_accepted' => true,
         ]);
@@ -60,13 +68,16 @@ class UserSeeder extends Seeder
         // 🔥 MOBILE USER 2
         $user2 = User::create([
             'id' => Str::uuid(),
-            'name' => 'Test User 2',
             'email' => 'user2@app.com',
-            'role' => 'user',
+            'type' => UserType::MOBILE,
+        ]);
 
+        MobileProfile::create([
+            'user_id' => $user2->id,
+            'name' => 'Test User 2',
             'age' => 42,
-            'gender' => 'male',
-            'diabetes_status' => 't2dm',
+            'gender' => Gender::MALE,
+            'diabetes_status' => DiabetesStatus::T2DM,
             'bmi' => 31.7,
             'disclaimer_accepted' => true,
         ]);

@@ -5,9 +5,11 @@ namespace App\Http\Controllers\API\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\UserResource;
+use App\Models\MobileProfile;
 use App\Models\RefreshToken;
 use App\Models\User;
 use App\Models\UserAuthProvider;
+use App\Enums\UserType;
 use App\Utilities\JwtUtility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,15 +26,21 @@ class AuthController extends Controller
 
         try {
             $user = User::create([
-                'name' => $data['name'],
                 'email' => $data['email'],
+                'type' => UserType::MOBILE,
+            ]);
+
+            MobileProfile::create([
+                'user_id' => $user->id,
+                'name' => $data['name'],
                 'age' => $data['age'],
                 'gender' => $data['gender'],
                 'diabetes_status' => $data['diabetes_status'],
                 'bmi' => $data['bmi'],
                 'disclaimer_accepted' => $data['disclaimer_accepted'],
-                'role' => 'user',
             ]);
+
+            $user->load('mobileProfile');
 
             UserAuthProvider::create([
                 'user_id' => $user->id,
@@ -57,7 +65,7 @@ class AuthController extends Controller
                 'success' => true,
                 'data' => [
                     'user' => new UserResource($user),
-                    'refresh_token' => $refreshToken,
+                    'refresh_token' => $refreshToken['token'],
                     'token' => $token,
                 ],
                 'message' => 'Registration successful'
@@ -75,9 +83,15 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        $user = User::where('email', $data['email'])->first();
+        $user = User::where('email', $data['email'])->with('mobileProfile')->first();
 
         if (!$user) {
+            return response()->json([
+                'message' => 'Invalid credentials'
+            ], 401);
+        }
+
+        if ($user->type === UserType::ADMIN) {
             return response()->json([
                 'message' => 'Invalid credentials'
             ], 401);
@@ -185,7 +199,7 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        $user = Auth::user();
+        $user = Auth::user()->load('mobileProfile');
 
         if (!$user) {
             return response()->json([
