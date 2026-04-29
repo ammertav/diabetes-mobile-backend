@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\V1\AuthController;
+use App\Http\Controllers\API\V1\FastingProtocolController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -11,6 +12,6 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::middleware(\App\Http\Middleware\API\V1\AuthMiddleware::class)->group(function () {
-
     Route::get('users/profile', [AuthController::class, 'me']);
+    Route::get('protocols', [FastingProtocolController::class, 'index']);
 });
