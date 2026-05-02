@@ -218,16 +218,28 @@ class AuthController extends Controller
         $user = Auth::user();
         $validated = $request->validated();
 
-        $user->mobileProfile->update([
-            'name' => $validated['name'],
-            'age' => $validated['age'],
-            'bmi' => $validated['bmi'],
-            'diabetes_status' => $validated['diabetes_status'],
-        ]);
+        DB::beginTransaction();
 
-        return response()->json([
-            'data' => new UserResource($user->fresh()->load('mobileProfile')),
-            'message' => 'Profile updated successfully',
-        ]);
+        try {
+            $user->mobileProfile->update([
+                'name' => $validated['name'],
+                'age' => $validated['age'],
+                'bmi' => $validated['bmi'],
+                'diabetes_status' => $validated['diabetes_status'],
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'data' => new UserResource($user->fresh()->load('mobileProfile')),
+                'message' => 'Profile updated successfully',
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Failed to update profile',
+                'error' => $th->getMessage(),
+            ], 500);
+        }
     }
 }
