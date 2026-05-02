@@ -35,7 +35,6 @@ class AuthMiddleware
                 return $this->unauthorized('Token bukan access token');
             }
 
-            // Ambil user berdasarkan NIK
             $user = \App\Models\User::find($payload->sub);
 
             if (!$user) {

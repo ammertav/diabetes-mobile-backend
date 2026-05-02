@@ -10,6 +10,7 @@ use App\Models\RefreshToken;
 use App\Models\User;
 use App\Models\UserAuthProvider;
 use App\Enums\UserType;
+use App\Http\Requests\UpdateUserRequest;
 use App\Utilities\JwtUtility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -209,6 +210,24 @@ class AuthController extends Controller
 
         return response()->json([
             'data' => new UserResource($user),
+        ]);
+    }
+
+    public function update(UpdateUserRequest $request)
+    {
+        $user = Auth::user();
+        $validated = $request->validated();
+
+        $user->mobileProfile->update([
+            'name' => $validated['name'],
+            'age' => $validated['age'],
+            'bmi' => $validated['bmi'],
+            'diabetes_status' => $validated['diabetes_status'],
+        ]);
+
+        return response()->json([
+            'data' => new UserResource($user->fresh()->load('mobileProfile')),
+            'message' => 'Profile updated successfully',
         ]);
     }
 }

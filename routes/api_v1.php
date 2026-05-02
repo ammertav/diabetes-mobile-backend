@@ -14,6 +14,7 @@ Route::prefix('auth')->group(function () {
 
 Route::middleware(\App\Http\Middleware\API\V1\AuthMiddleware::class)->group(function () {
     Route::get('users/profile', [AuthController::class, 'me']);
+    Route::put('users/profile', [AuthController::class, 'update']);
 
     // Fasting Protocols
     Route::get('protocols', [FastingProtocolController::class, 'index']);
