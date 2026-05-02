@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Enums\UserProtocolStatus;
 use App\Enums\UserType;
 use Illuminate\Database\Eloquent\Attributes\Guarded;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -58,5 +59,16 @@ class User extends Authenticatable
         return $this->authProviders()
             ->where('provider', \App\Enums\AuthProvider::EMAIL->value)
             ->first();
+    }
+
+    public function userProtocol()
+    {
+        return $this->hasMany(UserProtocol::class);
+    }
+
+    public function activeProtocol()
+    {
+        return $this->hasOne(UserProtocol::class)
+            ->where('status', UserProtocolStatus::ACTIVE);
     }
 }
