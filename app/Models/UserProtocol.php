@@ -29,4 +29,14 @@ class UserProtocol extends Model
     {
         return $this->hasMany(FastingLog::class);
     }
+
+    public function nowFastingLog(): ?FastingLog
+    {
+        $today = now()->toDateString();
+
+        return $this->logs()
+            ->whereDate('start_time', '<=', $today)
+            ->whereDate('end_time', '>=', $today)
+            ->first();
+    }
 }

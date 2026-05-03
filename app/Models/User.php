@@ -71,4 +71,24 @@ class User extends Authenticatable
         return $this->hasOne(UserProtocol::class)
             ->where('status', UserProtocolStatus::ACTIVE);
     }
+
+    public function fgbRecords()
+    {
+        return $this->hasMany(FgbRecord::class);
+    }
+
+    public function safetyAlerts()
+    {
+        return $this->hasMany(SafetyAlert::class);
+    }
+
+    public function alertSetting()
+    {
+        return $this->hasOne(UserAlertSetting::class);
+    }
+
+    public function fcmDevices()
+    {
+        return $this->hasMany(FcmDevice::class);
+    }
 }

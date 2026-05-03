@@ -25,4 +25,7 @@ Route::middleware(\App\Http\Middleware\API\V1\AuthMiddleware::class)->group(func
     Route::post('fasting-logs/confirm', [FastingLogController::class, 'confirm']);
     Route::patch('fasting-logs/{id}/end', [FastingLogController::class, 'endFasting']);
     Route::get('fasting-logs', [FastingLogController::class, 'index']);
+
+    // FGB Records
+    Route::post('fgb-records', [\App\Http\Controllers\API\V1\FgbController::class, 'store']);
 });
