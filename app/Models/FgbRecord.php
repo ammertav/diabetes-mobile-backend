@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 class FgbRecord extends Model
 {
+    use HasUuids;
     protected $guarded = ['id'];
+    protected $keyType = 'string';
+    public $incrementing = false;
 
     public function user()
     {
@@ -26,5 +30,10 @@ class FgbRecord extends Model
     public function alerts()
     {
         return $this->hasMany(SafetyAlert::class);
+    }
+
+    public function alert()
+    {
+        return $this->hasOne(SafetyAlert::class, 'fgb_record_id');
     }
 }

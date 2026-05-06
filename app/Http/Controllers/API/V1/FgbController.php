@@ -14,6 +14,19 @@ use Illuminate\Support\Str;
 
 class FgbController extends Controller
 {
+    public function index()
+    {
+        $user = request()->user();
+
+        $records = FgbRecord::where('user_id', $user->id)
+            ->orderByDesc('server_timestamp')
+            ->get()
+            ->map(function ($record) {
+                return new \App\Http\Resources\FgbResource($record);
+            });
+
+        return response()->json(['data' => $records]);
+    }
     public function store(FgbStoreRequest $request)
     {
         $validated = $request->validated();
@@ -100,7 +113,6 @@ class FgbController extends Controller
         // 🔒 anti double insert (karena ada unique constraint)
         try {
             SafetyAlert::create([
-                'id' => Str::uuid(),
                 'user_id' => $userId,
                 'fgb_record_id' => $fgb->id,
                 'type' => $type,
