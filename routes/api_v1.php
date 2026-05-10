@@ -3,6 +3,7 @@
 use App\Http\Controllers\API\V1\AuthController;
 use App\Http\Controllers\API\V1\FastingLogController;
 use App\Http\Controllers\API\V1\FastingProtocolController;
+use App\Http\Controllers\API\V1\SafetyAlertController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -29,4 +30,10 @@ Route::middleware(\App\Http\Middleware\API\V1\AuthMiddleware::class)->group(func
     // FGB Records
     Route::post('fgb', [\App\Http\Controllers\API\V1\FgbController::class, 'store']);
     Route::get('fgb', [\App\Http\Controllers\API\V1\FgbController::class, 'index']);
+
+    // Safety Alerts
+    Route::get('safety-alerts', [SafetyAlertController::class, 'index']);
+    Route::patch('safety-alerts/{id}/acknowledge', [SafetyAlertController::class, 'acknowledge']);
+    Route::get('safety-alerts/settings', [SafetyAlertController::class, 'settings']);
+    Route::put('safety-alerts/settings', [SafetyAlertController::class, 'updateSettings']);
 });

@@ -82,6 +82,11 @@ class User extends Authenticatable
         return $this->hasMany(SafetyAlert::class);
     }
 
+    public function safetyAlert(string $id)
+    {
+        return $this->safetyAlerts()->where('id', $id)->firstOrFail();
+    }
+
     public function alertSetting()
     {
         return $this->hasOne(UserAlertSetting::class);
