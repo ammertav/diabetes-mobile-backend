@@ -9,12 +9,12 @@ enum AlertType: string
     case HYPER_SEVERE = 'hyper_severe';
     case HYPER_MILD = 'hyper_mild';
 
-    public function treshold(): int
+    public function threshold(): int
     {
         return match ($this) {
-            AlertType::HYPO_SEVERE => 54,
-            AlertType::HYPO_MILD => 70,
-            AlertType::HYPER_SEVERE => 300,
+            AlertType::HYPO_SEVERE => 70,
+            AlertType::HYPO_MILD => 80,
+            AlertType::HYPER_SEVERE => 250,
             AlertType::HYPER_MILD => 180,
         };
     }

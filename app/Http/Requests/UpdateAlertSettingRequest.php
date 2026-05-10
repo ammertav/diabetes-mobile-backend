@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\AlertType;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -35,10 +36,21 @@ class UpdateAlertSettingRequest extends FormRequest
         $setting = $this->user()->alertSetting;
 
         $this->merge([
-            'hypo_severe' => $this->hypo_severe ?? $setting?->hypo_severe,
-            'hypo_mild' => $this->hypo_mild ?? $setting?->hypo_mild,
-            'hyper_mild' => $this->hyper_mild ?? $setting?->hyper_mild,
-            'hyper_severe' => $this->hyper_severe ?? $setting?->hyper_severe,
+            'hypo_severe' => $this->hypo_severe
+                ?? $setting?->hypo_severe
+                ?? AlertType::HYPO_SEVERE->threshold(),
+
+            'hypo_mild' => $this->hypo_mild
+                ?? $setting?->hypo_mild
+                ?? AlertType::HYPO_MILD->threshold(),
+
+            'hyper_mild' => $this->hyper_mild
+                ?? $setting?->hyper_mild
+                ?? AlertType::HYPER_MILD->threshold(),
+
+            'hyper_severe' => $this->hyper_severe
+                ?? $setting?->hyper_severe
+                ?? AlertType::HYPER_SEVERE->threshold(),
         ]);
     }
 }

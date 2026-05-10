@@ -45,7 +45,7 @@ class SafetyAlertController extends Controller
         }
 
         $alert->update([
-            'acknowledge_at' => now(),
+            'acknowledged_at' => now(),
             'action_taken' => $validated['action_taken'] ?? null,
         ]);
 
@@ -64,10 +64,10 @@ class SafetyAlertController extends Controller
         if (!$setting) {
             return response()->json([
                 'data' => [
-                    'hypo_severe' => \App\Enums\AlertType::HYPO_SEVERE->treshold(),
-                    'hypo_mild' => \App\Enums\AlertType::HYPO_MILD->treshold(),
-                    'hyper_severe' => \App\Enums\AlertType::HYPER_SEVERE->treshold(),
-                    'hyper_mild' => \App\Enums\AlertType::HYPER_MILD->treshold(),
+                    'hypo_severe' => \App\Enums\AlertType::HYPO_SEVERE->threshold(),
+                    'hypo_mild' => \App\Enums\AlertType::HYPO_MILD->threshold(),
+                    'hyper_severe' => \App\Enums\AlertType::HYPER_SEVERE->threshold(),
+                    'hyper_mild' => \App\Enums\AlertType::HYPER_MILD->threshold(),
                 ]
             ]);
         }
@@ -87,13 +87,19 @@ class SafetyAlertController extends Controller
         $user = $request->user();
 
         // Update atau create setting
-        $user->alertSetting()->updateOrCreate(
+        $updated = $user->alertSetting()->updateOrCreate(
             ['user_id' => $user->id],
             $request->validated()
         );
 
         return response()->json([
             'message' => 'Settings updated successfully',
+            'data' => [
+                'hypo_severe' => $updated->hypo_severe,
+                'hypo_mild' => $updated->hypo_mild,
+                'hyper_severe' => $updated->hyper_severe,
+                'hyper_mild' => $updated->hyper_mild,
+            ]
         ]);
     }
 }
