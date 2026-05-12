@@ -29,10 +29,9 @@ class AuthController extends Controller
 
         $user = User::where('email', $validated['email'])->first();
 
-        if (!$user || !$user->type === UserType::ADMIN) {
-            dd($user);
+        if (!$user || $user->type !== UserType::ADMIN) {
             return back()->withErrors([
-                'email' => 'Invalid credentials',
+                'email' => 'Registered account is not admin',
             ]);
         }
 
@@ -40,14 +39,12 @@ class AuthController extends Controller
             ->firstWhere('provider', AuthProvider::EMAIL);
 
         if (!$provider) {
-            dd($provider);
             return back()->withErrors([
                 'email' => 'Email login not available',
             ]);
         }
 
         if (!Hash::check($validated['password'], $provider->password_hash)) {
-            dd($provider->password_hash);
             return back()->withErrors([
                 'email' => 'Invalid credentials',
             ]);

@@ -1,4 +1,5 @@
 @php
+    $user = auth()->user();
     $menus = [
         [
             'label' => 'Dashboard',
@@ -83,10 +84,19 @@
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuAk_7Sa4MZkqraZWMzwL66nkySYucK0wMe4RO0ium8yCtKd9taOd7Q6qEhxgn14DK_97l0hy7dKaNGSYTddKfLory12Iur_qKIPntgBds9OJmapSyYVmtmfMaNVSMOXtCWxlyH6mW1h7Q3fBv0iuHkWR_nTpeUCmHkgpDvYMRulLiXhs-J1P6mG0RCXO1Fgp-oEsK-aq5bmJmLJJd5pGepxO0aYnolLelsjsZjvfVHf0ttvAO9KwFBnkvUXlJ-fC7PWQ-6Gc_NsKYk" />
         </div>
         <div class="overflow-hidden">
-            <p class="text-sm font-bold text-on-surface truncate">Dr. Sarah
-                Chen</p>
+            <p class="text-sm font-bold text-on-surface truncate">
+                {{ $user->adminProfile->name ?? 'User Admin' }}</p>
             <p class="text-xs text-on-surface-variant truncate">Chief Admin
             </p>
+
         </div>
+        <form method="POST" action="{{ route('logout') }}" class="inline">
+            @csrf
+            <button
+                class="p-1.5 text-slate-500 hover:text-error hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors flex items-center justify-center"
+                title="Logout">
+                <span class="material-symbols-outlined text-xl">logout</span>
+            </button>
+        </form>
     </div>
 </aside>

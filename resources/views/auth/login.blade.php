@@ -142,6 +142,7 @@
                 </div>
                 <form action="{{ route('login') }}" class="space-y-6"
                     method="POST">
+                    @csrf
                     <!-- Email Field -->
                     <div class="space-y-2">
                         <label
@@ -159,6 +160,10 @@
                                 placeholder="name@clinicalsanctuary.com"
                                 required="" type="email" />
                         </div>
+                        @error('email')
+                            <p class="text-red-500 text-sm ml-1">{{ $message }}
+                            </p>
+                        @enderror
                     </div>
                     <!-- Password Field -->
                     <div class="space-y-2">
