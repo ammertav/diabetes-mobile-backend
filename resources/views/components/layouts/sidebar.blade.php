@@ -10,8 +10,8 @@
         [
             'label' => 'Patient Management',
             'icon' => 'group',
-            'route' => 'patient-management',
-            'isActive' => request()->routeIs('patient-management'),
+            'route' => 'patients',
+            'isActive' => request()->routeIs('patients-management'),
         ],
         [
             'label' => 'Content CMS',

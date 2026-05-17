@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PatientController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -15,9 +16,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/', function () {
         return view('dashboard.index');
     })->name('dashboard');
-    Route::get('/patient-management', function () {
-        return view('patient-management.index');
-    })->name('patient-management');
+    Route::get('/patients', [PatientController::class, 'index'])->name('patients-management');
+    Route::get('/patients/data', [PatientController::class, 'loadPatients']);
     Route::get('/fgb-monitoring', function () {
         return view('fgb-monitoring.index');
     })->name('fgb-monitoring');
