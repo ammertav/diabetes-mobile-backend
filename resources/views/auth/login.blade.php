@@ -187,7 +187,17 @@
                                 type="password" />
                         </div>
                     </div>
-                    <!-- CTA Button -->
+                    <!-- Remember Me Button -->
+                    <div class="flex items-center space-y-0 mt-4 mb-2 ml-1">
+                        <input id="remember" name="remember"
+                            type="checkbox"
+                            class="h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary/40 transition duration-200 cursor-pointer"
+                            checked>
+                        <label for="remember"
+                            class="ml-3 block text-sm font-medium text-on-surface-variant cursor-pointer select-none">
+                            Remember me
+                        </label>
+                    </div>
                     <button
                         class="w-full primary-gradient text-white py-4 rounded-lg font-headline font-bold text-sm tracking-wide shadow-lg shadow-primary/20 hover:shadow-xl hover:scale-[1.01] active:scale-[0.98] transition-all duration-200"
                         type="submit">
@@ -200,7 +210,7 @@
                         institutional access?</p>
                     <button
                         class="font-label text-sm font-semibold text-primary px-6 py-2 rounded-full bg-surface-container-high hover:bg-surface-container-highest transition-colors">
-                        <a href="{{ 'register-page' }}">Register new
+                        <a href="{{ 'register' }}">Register new
                             account</a>
                     </button>
                 </div>

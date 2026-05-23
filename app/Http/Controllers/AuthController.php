@@ -25,9 +25,10 @@ class AuthController extends Controller
         $validated = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
+            'remember' => ['nullable'],
         ]);
 
-        $user = User::where('email', $validated['email'])->first();
+        $user = User::query()->where('email', $validated['email'])->first();
 
         if (!$user || $user->type !== UserType::ADMIN) {
             return back()->withErrors([
@@ -50,7 +51,7 @@ class AuthController extends Controller
             ]);
         }
 
-        Auth::login($user);
+        Auth::login($user, $validated['remember'] ?? false);
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard'));
