@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CmsContentController;
+use App\Http\Controllers\FastingProtocolController;
 use App\Http\Controllers\PatientController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,4 +30,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/cms', [CmsContentController::class, 'index'])->name('cms');
     Route::post('/cms/create', [CmsContentController::class, 'store'])->name('cms-store');
     Route::get('/cms/create', [CmsContentController::class, 'create'])->name('cms-create');
+
+    Route::get('/fasting-protocols', [FastingProtocolController::class, 'index'])->name('fasting-protocols');
 });
