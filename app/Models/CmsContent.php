@@ -12,6 +12,8 @@ class CmsContent extends Model
     use HasUuids;
 
     protected $guarded = ['id'];
+    protected $keyType = 'string';
+    public $incrementing = false;
 
     protected $casts = [
         'content_type' => CmsContentType::class,

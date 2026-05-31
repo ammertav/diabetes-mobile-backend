@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('day_context')->nullable();
 
             $table->string('title');
-            $table->string('body');
+            $table->longText('body');
 
             $table->boolean('is_published')->default(true);
 

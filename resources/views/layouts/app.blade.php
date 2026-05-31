@@ -132,13 +132,6 @@
                 <div
                     class="text-xl font-bold text-blue-700 dark:text-blue-400 tracking-tight font-headline">
                     The Clinical Sanctuary</div>
-                <div class="relative w-64">
-                    <span
-                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant scale-75">search</span>
-                    <input
-                        class="w-full pl-10 pr-4 py-1.5 bg-surface-container-highest border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all"
-                        placeholder="Search patients..." type="text" />
-                </div>
             </div>
             <div class="flex items-center gap-4">
                 <button

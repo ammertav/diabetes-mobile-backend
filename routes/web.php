@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CmsContentController;
 use App\Http\Controllers\PatientController;
 use Illuminate\Support\Facades\Route;
 
@@ -13,12 +14,19 @@ Route::post('/register', [AuthController::class, 'register'])->name('register');
 
 Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
     Route::get('/', function () {
         return view('dashboard.index');
     })->name('dashboard');
+
     Route::get('/patients', [PatientController::class, 'index'])->name('patients-management');
     Route::get('/patients/data', [PatientController::class, 'loadPatients']);
+
     Route::get('/fgb-monitoring', function () {
         return view('fgb-monitoring.index');
     })->name('fgb-monitoring');
+
+    Route::get('/cms', [CmsContentController::class, 'index'])->name('cms');
+    Route::post('/cms/create', [CmsContentController::class, 'store'])->name('cms-store');
+    Route::get('/cms/create', [CmsContentController::class, 'create'])->name('cms-create');
 });
