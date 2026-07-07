@@ -157,7 +157,6 @@ class AuthController extends Controller
                 'error' => 'Refresh token expired'
             ], 401);
         } catch (\Exception $e) {
-            dd($e);
             return response()->json([
                 'error' => 'Invalid token'
             ], 401);

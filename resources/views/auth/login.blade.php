@@ -99,6 +99,14 @@
         .primary-gradient {
             background: linear-gradient(135deg, #004ac6 0%, #2563eb 100%);
         }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.2s ease-out forwards;
+        }
     </style>
 </head>
 
@@ -140,8 +148,22 @@
                     <p class="text-on-surface-variant text-sm mt-2">Enter your
                         credentials to access the clinical dashboard.</p>
                 </div>
+                @if ($errors->any())
+                    <div class="mb-6 p-4 bg-error-container text-on-error-container rounded-lg border border-error/25 flex items-start gap-3 shadow-sm animate-fade-in">
+                        <span class="material-symbols-outlined text-xl mt-0.5 text-error" style="font-variation-settings: 'FILL' 1;">error</span>
+                        <div class="flex-1">
+                            <h4 class="font-headline font-bold text-sm">Sign In Failed</h4>
+                            <ul class="mt-1 text-xs list-disc list-inside space-y-0.5 opacity-90">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                @endif
                 <form action="{{ route('login') }}" class="space-y-6"
                     method="POST">
+                    @csrf
                     <!-- Email Field -->
                     <div class="space-y-2">
                         <label
@@ -154,11 +176,18 @@
                                     class="material-symbols-outlined text-xl">alternate_email</span>
                             </div>
                             <input
-                                class="block w-full pl-11 pr-4 py-3.5 bg-surface-container-highest border-none rounded-lg font-body text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all duration-300"
+                                class="block w-full pl-11 pr-4 py-3.5 bg-surface-container-highest rounded-lg font-body text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all duration-300 {{ $errors->has('email') ? 'border border-error focus:ring-error/40' : 'border-none' }}"
                                 id="email" name="email"
                                 placeholder="name@clinicalsanctuary.com"
-                                required="" type="email" />
+                                required="" type="email"
+                                value="{{ old('email', config('app.debug') ? config('app.test_username') : '') }}" />
                         </div>
+                        @error('email')
+                            <p class="text-error text-xs font-semibold mt-1.5 ml-1 flex items-center gap-1 animate-fade-in">
+                                <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">warning</span>
+                                {{ $message }}
+                            </p>
+                        @enderror
                     </div>
                     <!-- Password Field -->
                     <div class="space-y-2">
@@ -176,11 +205,18 @@
                                     class="material-symbols-outlined text-xl">lock</span>
                             </div>
                             <input
-                                class="block w-full pl-11 pr-4 py-3.5 bg-surface-container-highest border-none rounded-lg font-body text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all duration-300"
+                                class="block w-full pl-11 pr-4 py-3.5 bg-surface-container-highest rounded-lg font-body text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all duration-300 {{ $errors->has('password') ? 'border border-error focus:ring-error/40' : 'border-none' }}"
                                 id="password" name="password"
                                 placeholder="••••••••••••" required=""
-                                type="password" />
+                                type="password"
+                                value="{{ config('app.debug') ? config('app.test_password') : '' }}" />
                         </div>
+                        @error('password')
+                            <p class="text-error text-xs font-semibold mt-1.5 ml-1 flex items-center gap-1 animate-fade-in">
+                                <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">warning</span>
+                                {{ $message }}
+                            </p>
+                        @enderror
                     </div>
                     <!-- CTA Button -->
                     <button
