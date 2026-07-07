@@ -18,7 +18,7 @@ class FgbController extends Controller
     {
         $user = request()->user();
 
-        $records = FgbRecord::where('user_id', $user->id)
+        $records = FgbRecord::query()->where('user_id', $user->id)
             ->orderByDesc('server_timestamp')
             ->get()
             ->map(function ($record) {
@@ -71,7 +71,7 @@ class FgbController extends Controller
 
     private function checkAndCreateAlerts(string $userId, FgbRecord $fgb)
     {
-        $settings = UserAlertSetting::where('user_id', $userId)->first();
+        $settings = UserAlertSetting::query()->where('user_id', $userId)->first();
 
         if (!$settings) {
             $settings ??= new UserAlertSetting([

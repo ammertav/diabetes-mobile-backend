@@ -84,7 +84,7 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        $user = User::where('email', $data['email'])->with('mobileProfile')->first();
+        $user = User::query()->where('email', $data['email'])->with('mobileProfile')->first();
 
         if (!$user) {
             return response()->json([
@@ -139,7 +139,7 @@ class AuthController extends Controller
         try {
             $payload = JwtUtility::decode($token);
 
-            $tokenDb = RefreshToken::where('jti', $payload->jti)->first();
+            $tokenDb = RefreshToken::query()->where('jti', $payload->jti)->first();
 
             if (!$tokenDb) {
                 return response()->json(['error' => 'Token tidak valid'], 401);
@@ -168,7 +168,7 @@ class AuthController extends Controller
             ], 401);
         }
 
-        $user = User::where('id', $payload->sub)->first();
+        $user = User::query()->where('id', $payload->sub)->first();
 
         if (!$user) {
             return response()->json([

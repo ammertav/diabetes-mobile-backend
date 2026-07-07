@@ -97,8 +97,8 @@ class FastingLogController extends Controller
 
         $user = $request->user();
 
-        $userProtocol = UserProtocol::where('user_id', $user->id)->where('status', '=', UserProtocolStatus::ACTIVE)->firstOrFail();
-        $log = FastingLog::where('user_protocol_id', $userProtocol->id)->where('planned_date', '=', $validated['planned_date'])->first();
+        $userProtocol = UserProtocol::query()->where('user_id', $user->id)->where('status', '=', UserProtocolStatus::ACTIVE)->firstOrFail();
+        $log = FastingLog::query()->where('user_protocol_id', $userProtocol->id)->where('planned_date', '=', $validated['planned_date'])->first();
 
         if (!$log) {
             return response()->json(['message' => 'No planned fasting'], 404);

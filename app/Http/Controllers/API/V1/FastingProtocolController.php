@@ -47,7 +47,7 @@ class FastingProtocolController extends Controller
 
         // close previous active protocol there is one
         DB::transaction(function () use ($user, $validated) {
-            UserProtocol::where('user_id', $user->id)
+            UserProtocol::query()->where('user_id', $user->id)
                 ->where('status', '=', UserProtocolStatus::ACTIVE)
                 ->update([
                     'status' => UserProtocolStatus::COMPLETED,

@@ -27,7 +27,7 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        $user = User::where('email', $validated['email'])->first();
+        $user = User::query()->where('email', $validated['email'])->first();
 
         if (!$user || !$user->type === UserType::ADMIN) {
             return back()->withErrors([
