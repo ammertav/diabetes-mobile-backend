@@ -48,3 +48,12 @@ test('login page displays errors when validation fails', function () {
     $response->assertSee('The email field is required.');
     $response->assertSee('The password field is required.');
 });
+
+test('non-existent route returns 404 page with custom layout', function () {
+    /** @var \Illuminate\Foundation\Testing\TestCase $this */
+    $response = $this->get('/non-existent-route-path-999');
+
+    $response->assertStatus(404);
+    $response->assertSee('ERROR 404');
+    $response->assertSee('Page Not Found');
+});
