@@ -28,9 +28,10 @@ class AuthController extends Controller
             'remember' => ['nullable'],
         ]);
 
-        $user = User::query()->where('email', $validated['email'])->first();
+        $user = User::query()->query()->where('email', $validated['email'])->first();
 
-        if (!$user || $user->type !== UserType::ADMIN) {
+        if (!$user || !$user->type === UserType::ADMIN) {
+            dd($user);
             return back()->withErrors([
                 'email' => 'Registered account is not admin',
             ]);
