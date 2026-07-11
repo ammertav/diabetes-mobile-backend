@@ -197,3 +197,26 @@ class PatientFilterData
 }
 ```
 
+---
+
+## 7. Views Architecture & Partials Pattern
+
+To prevent views (Blade files) from becoming bloated (max 150 lines rule applies to Blade files as well where practical), structure your views folder by features and extract layout sections into partials:
+
+### Folder Directory Structure:
+```
+resources/views/
+├── [feature]/
+│   ├── index.blade.php             # Main page template
+│   └── partials/                   # Sub-sections (Only if page is complex)
+│       ├── _stats.blade.php
+│       ├── _filters.blade.php
+│       └── _modal-add.blade.php
+```
+
+### View Guidelines:
+- **Use Partials (`@include`)**: For any complex section of a page (e.g. search forms, grids, modal dialogues), extract it into a separate file under `[feature]/partials/` prefixed with an underscore (e.g., `_filters.blade.php`).
+- **Use Blade Components (`<x-...>`)**: For reusable UI elements (badges, buttons, generic modal skeletons, alert boxes) shared across different features, create them in `resources/views/components/`.
+- **Keep Scripts Clean**: Avoid writing long inline scripts. Bind complex JavaScript properties/functions to external or cleanly declared Alpine.js handlers.
+
+
