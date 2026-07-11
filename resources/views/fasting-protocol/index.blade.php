@@ -1,10 +1,7 @@
 @extends('layouts.app')
-
 @section('content')
-    <!-- Content Area -->
-    <div class="p-2 w-full mx-auto space-y-8">
-        <!-- Header & Action Row -->
-        <div class="flex justify-between items-end">
+    <!-- Header & Action Row -->
+    <div class="flex justify-between items-end">
             <div>
                 <p class="text-on-surface-variant font-inter text-sm mb-1">Clinical
                     Administration</p>
@@ -292,7 +289,6 @@
                 </div>
             </div>
         </div>
-    </div>
     @include('fasting-protocol.create-protocol-modal')
 @endsection
 
@@ -312,4 +308,4 @@
             modal.classList.remove('flex');
         }
     </script>
-@endpush)
+@endpush
