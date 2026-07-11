@@ -3,68 +3,29 @@
 namespace App\Http\Controllers\API\V1;
 
 use App\Enums\FastingLogStatus;
-use App\Enums\UserProtocolStatus;
 use App\Http\Controllers\Controller;
-use App\Models\FastingLog;
-use App\Models\UserProtocol;
+use App\Actions\Fasting\ListFastingLogsAction;
+use App\Actions\Fasting\ConfirmFastingLogAction;
+use App\Actions\Fasting\EndFastingLogAction;
+use App\Exceptions\AlreadyConfirmedException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class FastingLogController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, ListFastingLogsAction $action)
     {
-        $request->validate([
+        $validated = $request->validate([
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date',
             'status' => 'nullable|in:completed,skipped,pending',
-            'limit' => 'nullable|integer|max:50'
+            'limit' => 'nullable|integer|max:50',
+            'cursor' => 'nullable|integer',
         ]);
 
-        $user = $request->user();
-
-        $baseQuery = FastingLog::whereHas('userProtocol', function ($q) use ($user) {
-            $q->where('user_id', $user->id);
-        });
-
-        if ($request->start_date) {
-            $baseQuery->whereDate('planned_date', '>=', $request->start_date);
-        }
-
-        if ($request->end_date) {
-            $baseQuery->whereDate('planned_date', '<=', $request->end_date);
-        }
-
-        if ($request->status) {
-            $baseQuery->where('status', $request->status);
-        }
-
-        // summary
-        $total = (clone $baseQuery)->count();
-        $completed = (clone $baseQuery)->where('status', FastingLogStatus::COMPLETED)->count();
-        $skipped = (clone $baseQuery)->where('status', FastingLogStatus::SKIPPED)->count();
-
-        // cursor pagination
-        $query = clone $baseQuery;
-
-        if ($request->cursor) {
-            $query->where('id', '<', $request->cursor);
-        }
-
-        $limit = min($request->limit ?? 20, 50);
-
-        $logs = $query
-            ->orderBy('planned_date', 'desc')
-            ->orderBy('id', 'desc')
-            ->limit($limit + 1)
-            ->get();
-
-        $hasNext = $logs->count() > $limit;
-        $logs = $logs->take($limit);
-        $nextCursor = $hasNext ? $logs->last()->id : null;
+        $result = $action->execute($request->user(), $validated);
 
         return response()->json([
-            'data' => $logs->map(fn($log) => [
+            'data' => $result['logs']->map(fn($log) => [
                 'id' => $log->id,
                 'planned_date' => $log->planned_date,
                 'is_completed' => $log->status === FastingLogStatus::COMPLETED,
@@ -72,20 +33,12 @@ class FastingLogController extends Controller
                 'mood' => $log->mood,
                 'server_timestamp' => now()->toISOString(),
             ]),
-            'summary' => [
-                'total' => $total,
-                'completed' => $completed,
-                'skipped' => $skipped,
-                'adherence_rate' => $total > 0 ? round($completed / $total, 3) : 0,
-            ],
-            'pagination' => [
-                'has_next' => $hasNext,
-                'next_cursor' => $nextCursor,
-            ]
+            'summary' => $result['summary'],
+            'pagination' => $result['pagination'],
         ]);
     }
 
-    public function confirm(Request $request)
+    public function confirm(Request $request, ConfirmFastingLogAction $action)
     {
         $validated = $request->validate([
             'planned_date' => 'required|date|in:' . now()->toDateString(),
@@ -95,16 +48,22 @@ class FastingLogController extends Controller
             'notes' => 'nullable|string|max:500',
         ]);
 
-        $user = $request->user();
+        try {
+            $log = $action->execute($request->user(), $validated);
 
-        $userProtocol = UserProtocol::query()->where('user_id', $user->id)->where('status', '=', UserProtocolStatus::ACTIVE)->firstOrFail();
-        $log = FastingLog::query()->where('user_protocol_id', $userProtocol->id)->where('planned_date', '=', $validated['planned_date'])->first();
-
-        if (!$log) {
-            return response()->json(['message' => 'No planned fasting'], 404);
-        }
-
-        if (!$log->status->isPlanned()) {
+            return response()->json([
+                'message' => 'Fasting log confirmed',
+                "data" => [
+                    'id' => $log->id,
+                    'planned_date' => $log->planned_date,
+                    'is_completed' => $log->status === FastingLogStatus::COMPLETED,
+                    'mood' => $log->mood,
+                    'notes' => $log->notes,
+                    'confirmed_at' => $log->confirmed_at,
+                ],
+            ]);
+        } catch (AlreadyConfirmedException $e) {
+            $log = $e->getLog();
             return response()->json([
                 'message' => 'Already confirmed',
                 "data" => [
@@ -116,65 +75,25 @@ class FastingLogController extends Controller
                     'confirmed_at' => $log->confirmed_at,
                 ],
             ], 409);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], $e->getCode() ?: 400);
         }
-
-        $now = now();
-
-        DB::transaction(function () use ($log, $validated, $now) {
-            if ($validated['is_completed']) {
-                $log->update([
-                    'status' => FastingLogStatus::COMPLETED,
-                    'started_at' => $now,
-                    'mood' => $validated['mood'],
-                    'notes' => $validated['notes'],
-                    'confirmed_at' => $now,
-                ]);
-            } else {
-                $log->update([
-                    'status' => FastingLogStatus::SKIPPED,
-                    'skip_reason' => $validated['skip_reason'],
-                    'notes' => $validated['notes'],
-                    'confirmed_at' => $now,
-                ]);
-            }
-        });
-
-        return response()->json([
-            'message' => 'Fasting log confirmed',
-            "data" => [
-                'id' => $log->id,
-                'planned_date' => $log->planned_date,
-                'is_completed' => $log->status === FastingLogStatus::COMPLETED,
-                'mood' => $log->mood,
-                'notes' => $log->notes,
-                'confirmed_at' => $log->confirmed_at,
-            ],
-        ]);
     }
 
-    public function endFasting(int $id)
+    public function endFasting(int $id, EndFastingLogAction $action)
     {
-        $log = FastingLog::findOrFail($id);
+        try {
+            $action->execute($id);
 
-        if ($log->status !== FastingLogStatus::COMPLETED) {
-            return response()->json(['message' => 'Invalid state'], 400);
+            return response()->json([
+                'message' => 'Fasting ended'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], $e->getCode() ?: 400);
         }
-
-        if ($log->ended_at) {
-            return response()->json(['message' => 'Already ended'], 409);
-        }
-
-        $end = now();
-
-        $duration = $log->started_at
-            ? $end->diffInMinutes($log->started_at)
-            : null;
-
-        $log->update([
-            'ended_at' => $end,
-            'actual_duration_min' => $duration,
-        ]);
-
-        return response()->json(['message' => 'Fasting ended']);
     }
 }

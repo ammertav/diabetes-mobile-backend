@@ -4,129 +4,57 @@ namespace App\Http\Controllers\API\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterRequest;
-use App\Http\Resources\UserResource;
-use App\Models\MobileProfile;
-use App\Models\RefreshToken;
-use App\Models\User;
-use App\Models\UserAuthProvider;
-use App\Enums\UserType;
 use App\Http\Requests\UpdateUserRequest;
-use App\Utilities\JwtUtility;
+use App\Http\Resources\UserResource;
+use App\Actions\Auth\RegisterUserAction;
+use App\Actions\Auth\LoginUserAction;
+use App\Actions\Auth\RotateRefreshTokenAction;
+use App\Actions\Auth\UpdateUserProfileAction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    public function register(RegisterRequest $request)
+    public function register(RegisterRequest $request, RegisterUserAction $action)
     {
-        $data = $request->validated();
+        $result = $action->execute($request->validated());
 
-        DB::beginTransaction();
-
-        try {
-            $user = User::create([
-                'email' => $data['email'],
-                'type' => UserType::MOBILE,
-            ]);
-
-            MobileProfile::create([
-                'user_id' => $user->id,
-                'name' => $data['name'],
-                'age' => $data['age'],
-                'gender' => $data['gender'],
-                'diabetes_status' => $data['diabetes_status'],
-                'bmi' => $data['bmi'],
-                'disclaimer_accepted' => $data['disclaimer_accepted'],
-            ]);
-
-            $user->load('mobileProfile');
-
-            UserAuthProvider::create([
-                'user_id' => $user->id,
-                'provider' => \App\Enums\AuthProvider::EMAIL,
-                'provider_id' => $data['email'],
-                'password_hash' => Hash::make($data['password']),
-            ]);
-
-            $refreshToken = JwtUtility::generateRefreshToken($user);
-            $token = JwtUtility::generateAccessToken($user);
-
-            RefreshToken::create([
-                'user_id' => $user->id,
-                'jti' => $refreshToken['jti'],
-                'expired_at' => $refreshToken['expired_at'],
-                'is_revoked' => false,
-            ]);
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'user' => new UserResource($user),
-                    'refresh_token' => $refreshToken['token'],
-                    'token' => $token,
-                ],
-                'message' => 'Registration successful'
-            ]);
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            throw $th;
-        }
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'user' => new UserResource($result['user']),
+                'refresh_token' => $result['refresh_token'],
+                'token' => $result['token'],
+            ],
+            'message' => 'Registration successful'
+        ]);
     }
 
-    public function login(Request $request)
+    public function login(Request $request, LoginUserAction $action)
     {
         $data = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
-        $user = User::query()->where('email', $data['email'])->with('mobileProfile')->first();
+        $result = $action->execute($data['email'], $data['password']);
 
-        if (!$user) {
+        if (!$result) {
             return response()->json([
                 'message' => 'Invalid credentials'
             ], 401);
         }
-
-        if ($user->type === UserType::ADMIN) {
-            return response()->json([
-                'message' => 'Invalid credentials'
-            ], 401);
-        }
-
-        $auth = $user->authProviders()->where('provider', 'email')->first();
-
-        if (!Hash::check($data['password'], $auth->password_hash)) {
-            return response()->json([
-                'message' => 'Invalid credentials'
-            ], 401);
-        }
-
-
-        $refreshToken = JwtUtility::generateRefreshToken($user);
-        $accessToken = JwtUtility::generateAccessToken($user);
-
-        RefreshToken::create([
-            'user_id' => $user->id,
-            'jti' => $refreshToken['jti'],
-            'expired_at' => $refreshToken['expired_at'],
-            'is_revoked' => false,
-        ]);
 
         return response()->json([
             'data' => [
-                'user' => new UserResource($user),
-                'token' => $accessToken,
-                'refresh_token' => $refreshToken['token'],
+                'user' => new UserResource($result['user']),
+                'token' => $result['token'],
+                'refresh_token' => $result['refresh_token'],
             ]
         ]);
     }
 
-    public function refreshToken(Request $request)
+    public function refreshToken(Request $request, RotateRefreshTokenAction $action)
     {
         $token = $request->bearerToken();
 
@@ -137,64 +65,19 @@ class AuthController extends Controller
         }
 
         try {
-            $payload = JwtUtility::decode($token);
+            $result = $action->execute($token);
 
-            $tokenDb = RefreshToken::query()->where('jti', $payload->jti)->first();
-
-            if (!$tokenDb) {
-                return response()->json(['error' => 'Token tidak valid'], 401);
-            }
-
-            if ($tokenDb->is_revoked) {
-                return response()->json(['error' => 'Token sudah revoked'], 401);
-            }
-
-            if ($tokenDb->expired_at < now()) {
-                return response()->json(['error' => 'Token expired'], 401);
-            }
-        } catch (\Firebase\JWT\ExpiredException $e) {
             return response()->json([
-                'error' => 'Refresh token expired'
-            ], 401);
+                'data' => [
+                    'token' => $result['token'],
+                    'refresh_token' => $result['refresh_token'],
+                ]
+            ]);
         } catch (\Exception $e) {
             return response()->json([
-                'error' => 'Invalid token'
+                'error' => $e->getMessage()
             ], 401);
         }
-
-        if (($payload->type ?? null) !== 'refresh') {
-            return response()->json([
-                'error' => 'Invalid token type'
-            ], 401);
-        }
-
-        $user = User::query()->where('id', $payload->sub)->first();
-
-        if (!$user) {
-            return response()->json([
-                'error' => 'User not found'
-            ], 401);
-        }
-
-        $tokenDb->update(['is_revoked' => true]);
-
-        $newAccessToken = JwtUtility::generateAccessToken($user);
-        $newRefreshToken = JwtUtility::generateRefreshToken($user);
-
-        RefreshToken::create([
-            'user_id' => $user->id,
-            'jti' => $newRefreshToken['jti'],
-            'expired_at' => $newRefreshToken['expired_at'],
-            'is_revoked' => false,
-        ]);
-
-        return response()->json([
-            'data' => [
-                'token' => $newAccessToken,
-                'refresh_token' => $newRefreshToken['token'],
-            ],
-
-        ]);
     }
 
     public function me(Request $request)
@@ -212,29 +95,16 @@ class AuthController extends Controller
         ]);
     }
 
-    public function update(UpdateUserRequest $request)
+    public function update(UpdateUserRequest $request, UpdateUserProfileAction $action)
     {
-        $user = Auth::user();
-        $validated = $request->validated();
-
-        DB::beginTransaction();
-
         try {
-            $user->mobileProfile->update([
-                'name' => $validated['name'],
-                'age' => $validated['age'],
-                'bmi' => $validated['bmi'],
-                'diabetes_status' => $validated['diabetes_status'],
-            ]);
-
-            DB::commit();
+            $user = $action->execute(Auth::user(), $request->validated());
 
             return response()->json([
-                'data' => new UserResource($user->fresh()->load('mobileProfile')),
+                'data' => new UserResource($user),
                 'message' => 'Profile updated successfully',
             ]);
         } catch (\Throwable $th) {
-            DB::rollBack();
             return response()->json([
                 'message' => 'Failed to update profile',
                 'error' => $th->getMessage(),

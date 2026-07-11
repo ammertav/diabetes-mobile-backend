@@ -1,0 +1,157 @@
+# Laravel Clean Architecture Guidelines (Action Pattern)
+
+This project uses the **Action Pattern** to maintain clean, readable, and highly maintainable code. The goal is to keep controllers, models, and other Laravel components "thin" by delegating business logic to single-responsibility Action classes.
+
+---
+
+## 1. Golden Rules of File Readability
+
+- **Max File Length**: No single file should exceed **150 lines of code** (excluding boilerplate comments where necessary, but code itself should be kept compact).
+- **Max Method Length**: Methods must not exceed **25 lines**. If a method is longer, refactor by extracting blocks into private helper methods or new classes.
+- **Low Cognitive Complexity**: Avoid nested loops, deeply nested `if-else` blocks, and long inline database queries.
+
+---
+
+## 2. Action Pattern
+
+All business logic must be isolated in single-responsibility classes under `app/Actions/` grouped into subfolders by feature (e.g., `app/Actions/Auth/`, `app/Actions/Fasting/`, `app/Actions/Fgb/`, `app/Actions/Safety/`).
+
+### Action Class Structure
+- Actions should be named as verbs describing the task (e.g., `RegisterUserAction`, `StoreFastingLogAction`).
+- Each Action must have only **one public method**, typically `execute()` or `handle()`.
+- Use dependency injection in the constructor for any services or repositories required.
+
+#### Example Action Class:
+```php
+<?php
+
+namespace App\Actions\Auth;
+
+use App\Models\User;
+use App\Models\MobileProfile;
+use App\Models\UserAuthProvider;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+
+class RegisterUserAction
+{
+    public function execute(array $data): User
+    {
+        return DB::transaction(function () use ($data) {
+            $user = User::create([
+                'email' => $data['email'],
+                'type' => $data['type'],
+            ]);
+
+            MobileProfile::create(array_merge($data['profile'], ['user_id' => $user->id]));
+
+            UserAuthProvider::create([
+                'user_id' => $user->id,
+                'provider' => $data['provider'],
+                'provider_id' => $data['email'],
+                'password_hash' => Hash::make($data['password']),
+            ]);
+
+            return $user;
+        });
+    }
+}
+```
+
+---
+
+## 3. Thin Controllers
+
+Controllers should act only as traffic controllers. They must NOT contain business logic, manual database queries, or inline validation logic.
+
+### Controller Guidelines:
+- **No Inline Validation**: Always use **Form Requests** (`app/Http/Requests`) for validating input.
+- **Delegate Business Logic**: Call Action classes to perform actions.
+- **No Direct DB Queries**: Controllers should not run raw queries, complex Eloquent builders, or transactions. Let the Action handle those.
+- **API Resources**: Use **API Resources** (`app/Http/Resources`) to format JSON responses instead of returning raw arrays or model objects.
+
+#### Example Controller:
+```php
+<?php
+
+namespace App\Http\Controllers\API\V1;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\RegisterRequest;
+use App\Http\Resources\UserResource;
+use App\Actions\RegisterUserAction;
+use App\Utilities\JwtUtility;
+
+class AuthController extends Controller
+{
+    public function register(RegisterRequest $request, RegisterUserAction $registerAction)
+    {
+        $user = $registerAction->execute($request->validated());
+        
+        $token = JwtUtility::generateAccessToken($user);
+        $refreshToken = JwtUtility::generateRefreshToken($user);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'user' => new UserResource($user->load('mobileProfile')),
+                'token' => $token,
+                'refresh_token' => $refreshToken['token'],
+            ],
+            'message' => 'Registration successful'
+        ]);
+    }
+}
+```
+
+---
+
+## 4. Thin Models
+
+Models should represent the database structure and relationships, not business processes.
+
+### Keep inside Models:
+- Relationships (e.g., `belongsTo`, `hasMany`).
+- Attribute casting (`protected $casts`).
+- Query scopes (e.g., `scopeActive`).
+- Accessors and mutators.
+
+### Keep OUT of Models:
+- Complex query logic that crosses multiple boundaries.
+- Logic modifying other tables/models.
+- Logic sending notifications, creating external tokens, or writing to log files.
+
+---
+
+## 5. Form Requests
+
+Use Form Requests to cleanly separate validation logic from controller handlers.
+
+#### Example Form Request (`app/Http/Requests/RegisterRequest.php`):
+```php
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class RegisterRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'email' => ['required', 'email', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8'],
+            'name' => ['required', 'string', 'max:255'],
+            'age' => ['required', 'integer'],
+            'gender' => ['required', 'string'],
+            // etc...
+        ];
+    }
+}
+```

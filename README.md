@@ -1,58 +1,111 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Dokumentasi Proyek: Laravel Diabetes & Fasting Monitor API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Deskripsi Singkat
+Aplikasi backend berbasis Laravel untuk mengelola dan memonitor protokol puasa (fasting) serta kadar gula darah harian (FBG - Fasting Blood Glucose) bagi pengguna diabetes.
 
-## About Laravel
+Aplikasi ini dibagi menjadi 2 peranan utama:
+1. **API (Mobile)**: Digunakan oleh **pasien/pengguna diabetes (tipe `MOBILE`)** untuk mengelola profil, mendaftar protokol puasa, mencatat/mengakhiri puasa harian, mencatat kadar gula darah harian, serta menerima notifikasi alert kesehatan secara instan.
+2. **WEB Dashboard**: Digunakan oleh **pengawas/dokter (Supervisors - tipe `ADMIN`)** untuk mengawasi pasien secara real-time, mendeteksi peringatan kritis (severe alert) jika kadar gula darah berada dalam zona bahaya (hipoglikemia/hiperglikemia), serta mengonfirmasi penanganan medis yang diberikan (*acknowledgement*).
+   - *Catatan:* Saat ini, sistem dikonfigurasi untuk menggunakan 1 akun pengawas utama (tipe `ADMIN`), sehingga akun administrator tunggal sudah cukup untuk mencakup kebutuhan operasional pengawas.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🛠 Arsitektur & Pola Desain (Action Pattern)
+Proyek ini mengikuti aturan **Action Pattern** untuk memastikan file tetap kecil, mudah dibaca, serta memisahkan tanggung jawab logika bisnis dari lapisan HTTP (Controllers).
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Aturan Keterbacaan File**:
+  - Maksimal baris per file: **150 baris**.
+  - Maksimal baris per method: **25 baris**.
+- **Action Classes**: Seluruh logika bisnis dipindahkan ke `app/Actions` yang dikelompokkan berdasarkan fiturnya:
+  - **`app/Actions/Auth`**: Logika registrasi pasien, otentikasi login, rotasi JWT refresh token, dan pembaruan profil pengguna.
+  - **`app/Actions/Fasting`**: Logika pencarian/filter histori puasa, konfirmasi log puasa harian, menghentikan puasa aktif, serta inisiasi rencana puasa 4 minggu.
+  - **`app/Actions/Fgb`**: Pencatatan kadar gula darah dan pemicu otomatis sistem peringatan keselamatan.
+  - **`app/Actions/Safety`**: Konfirmasi penanganan alert keselamatan medis dan pembaruan batas ambang kadar gula darah.
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 👥 Aktor & Akun Default (Seeder)
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Data default dapat diinisiasi menggunakan seeder Laravel. Akun bawaan setelah seeding (`php artisan db:seed`):
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### 1. Akun Pengawas (Web Dashboard - ADMIN)
+*   **Email**: `admin@app.com`
+*   **Password**: `Admin1234`
+*   **Tipe Akun**: `UserType::ADMIN`
 
-## Agentic Development
+### 2. Akun Pasien / Pengguna Diabetes (Mobile API - MOBILE)
+*   **Email**: `user@app.com` dan `user2@app.com`
+*   **Password**: `User1234`
+*   **Tipe Akun**: `UserType::MOBILE`
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+---
 
+## 🔒 Sistem Keamanan Kadar Gula Darah (Safety Alert Threshold)
+Setiap kali pasien menginput kadar gula darah (FBG Record), sistem secara otomatis akan memvalidasi kadar tersebut berdasarkan batas batas berikut untuk mendeteksi bahaya medis:
+
+| Kadar FBG (mg/dL) | Tipe Peringatan | Pesan Peringatan | Tindakan Medis yang Disarankan |
+|---|---|---|---|
+| **< 70** | `hypo_severe` (Hipoglikemia Berat) | *FBG Anda {value} mg/dL — terlalu rendah (berbahaya).* | *Segera konsumsi gula cepat serap dan hubungi tenaga medis.* |
+| **70 - 79** | `hypo_mild` (Hipoglikemia Ringan) | *FBG Anda {value} mg/dL — di bawah normal.* | *Pertimbangkan konsumsi makanan manis ringan.* |
+| **80 - 180** | *Normal (Tidak memicu alert)* | - | - |
+| **181 - 250** | `hyper_mild` (Hiperglikemia Ringan) | *FBG Anda {value} mg/dL — di atas normal.* | *Pantau kadar gula darah secara berkala.* |
+| **> 250** | `hyper_severe` (Hiperglikemia Berat) | *FBG Anda {value} mg/dL — sangat tinggi.* | *Segera lakukan konsultasi medis/dokter.* |
+
+Peringatan bahaya akan tersimpan di tabel `safety_alerts` sehingga pengawas/admin dapat memantau dan memberikan status konfirmasi penanganan (`acknowledge`) di web dashboard.
+
+---
+
+## 🚀 Panduan Instalasi & Setup Lokal
+
+Ikuti langkah-langkah berikut untuk menjalankan proyek di komputer lokal Anda:
+
+### 1. Kloning & Masuk ke Folder Proyek
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone <url-repository>
+cd laravel-diabetes-app
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 2. Instalasi Dependensi PHP
+```bash
+composer install
+```
 
-## Contributing
+### 3. Konfigurasi Environment File
+Salin file konfigurasi lingkungan:
+```bash
+cp .env.example .env
+```
+Buka file `.env` dan sesuaikan koneksi database MySQL Anda (misal nama database: `laravel_diabetes_app`, username, dan password).
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 4. Membuat Application Key
+```bash
+php artisan key:generate
+```
 
-## Code of Conduct
+### 5. Membuat Kunci RSA untuk Token JWT (Penting)
+Aplikasi menggunakan token JWT berbasis algoritma `RS256` untuk keamanan otentikasi API mobile. Jalankan perintah berikut untuk membuat direktori kunci dan men-generate kunci privat/publik baru:
+```bash
+mkdir -p storage/app/private/keys storage/app/public/keys
+openssl genrsa -out storage/app/private/keys/private.key 2048
+openssl rsa -in storage/app/private/keys/private.key -pubout -out storage/app/public/keys/public.key
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 6. Migrasi & Seeding Database
+Jalankan migrasi database dan masukkan data awal (termasuk akun administrator/admin dan protokol puasa bawaan):
+```bash
+php artisan migrate --seed
+```
 
-## Security Vulnerabilities
+### 7. Jalankan Server Lokal
+```bash
+php artisan serve
+```
+Aplikasi Anda akan berjalan di `http://127.0.0.1:8000`.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 🧪 Pengujian Unit & Fitur (Testing)
+Proyek ini dilengkapi dengan unit & feature testing menggunakan Pest/PHPUnit. Untuk menjalankan seluruh rangkaian tes otomatis:
+```bash
+php artisan test
+```
