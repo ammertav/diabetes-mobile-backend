@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('fasting_protocol_days', function (Blueprint $table) {
-            $table->id()->primary();
+            $table->id();
             $table->foreignUuid('fasting_protocol_id')
                 ->constrained()
                 ->cascadeOnDelete();

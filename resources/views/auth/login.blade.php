@@ -163,8 +163,7 @@
                             class="material-symbols-outlined text-xl mt-0.5 text-error"
                             style="font-variation-settings: 'FILL' 1;">error</span>
                         <div class="flex-1">
-                            <h4 class="font-headline font-bold text-sm">Sign In
-                                Failed</h4>
+                            <h4 class="font-headline font-bold text-sm">Sign In Failed</h4>
                             <ul
                                 class="mt-1 text-xs list-disc list-inside space-y-0.5 opacity-90">
                                 @foreach ($errors->all() as $error)
