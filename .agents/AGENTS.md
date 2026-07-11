@@ -155,3 +155,45 @@ class RegisterRequest extends FormRequest
     }
 }
 ```
+
+---
+
+## 6. Clean Architecture (5-Layer Pattern)
+
+For operations involving complex parameters, data querying, and formatting, follow the 5-layer clean architecture system:
+
+1.  **Form Request**: Validate request inputs (`app/Http/Requests`).
+2.  **DTO (Data Transfer Object)**: Group validated parameters into a strongly-typed data class (`app/DTO`).
+3.  **Action Class**: Execute the business process by coordinating data scopes and retrieval (`app/Actions`).
+4.  **Query Scopes**: Define DB query filters inside Model local scopes (`app/Models`) to hide Eloquent query builder complexities.
+5.  **API Resource / Presenter**: Transform the Eloquent results into formatted, presentable JSON responses (`app/Http/Resources`).
+
+### Example DTO:
+```php
+<?php
+
+namespace App\DTO;
+
+class PatientFilterData
+{
+    public function __construct(
+        public ?string $search,
+        public ?string $risk,
+        public ?string $protocol,
+        public ?string $date,
+        public int $page
+    ) {}
+
+    public static function fromRequest(array $validated, int $page = 1): self
+    {
+        return new self(
+            search: $validated['search'] ?? null,
+            risk: $validated['risk'] ?? null,
+            protocol: $validated['protocol'] ?? null,
+            date: $validated['date'] ?? null,
+            page: $page
+        );
+    }
+}
+```
+

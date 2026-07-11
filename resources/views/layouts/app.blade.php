@@ -154,11 +154,6 @@
             @yield('content')
         </div>
     </main>
-    <!-- FAB for Global Quick Actions -->
-    <button
-        class="fixed bottom-8 right-8 primary-gradient text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform z-50">
-        <span class="material-symbols-outlined text-3xl">add</span>
-    </button>
     @stack('scripts')
 </body>
 

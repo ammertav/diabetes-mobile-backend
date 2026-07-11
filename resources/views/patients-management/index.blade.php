@@ -36,8 +36,6 @@
                             class="material-symbols-outlined text-primary text-2xl"
                             style="font-variation-settings: 'FILL' 1;">group</span>
                     </div>
-                    <span
-                        class="text-secondary font-bold text-xs bg-secondary-container px-2 py-1 rounded-full">+12.5%</span>
                 </div>
                 <div>
                     <p
@@ -56,8 +54,6 @@
                             class="material-symbols-outlined text-secondary text-2xl"
                             style="font-variation-settings: 'FILL' 1;">timer</span>
                     </div>
-                    <span
-                        class="text-on-surface-variant font-bold text-xs bg-surface-container-high px-2 py-1 rounded-full">Stable</span>
                 </div>
                 <div>
                     <p
@@ -76,8 +72,6 @@
                             class="material-symbols-outlined text-tertiary text-2xl"
                             style="font-variation-settings: 'FILL' 1;">warning</span>
                     </div>
-                    <span
-                        class="text-tertiary font-bold text-xs bg-tertiary-container/20 px-2 py-1 rounded-full">Critical</span>
                 </div>
                 <div>
                     <p
@@ -98,33 +92,43 @@
                 <div class="flex items-center gap-4 flex-1 min-w-75">
                     <div class="relative flex-1">
                         <input
+                            x-model="search"
+                            @input.debounce.300ms="loadPatients(1)"
                             class="w-full bg-surface-container-low border-none rounded-xl px-10 py-3 text-sm focus:ring-2 focus:ring-primary/20"
-                            placeholder="Search by name, ID or protocol..."
+                            placeholder="Search by name, email or protocol..."
                             type="text" />
                         <span
                             class="material-symbols-outlined absolute left-3 top-3 text-outline">search</span>
                     </div>
                     <button
-                        class="bg-surface-container-high p-3 rounded-xl text-on-surface-variant hover:bg-surface-variant transition-colors">
-                        <span class="material-symbols-outlined">tune</span>
+                        @click="search = ''; risk = 'all'; protocol = 'all'; date = ''; loadPatients(1);"
+                        class="bg-surface-container-high p-3 rounded-xl text-on-surface-variant hover:bg-surface-variant transition-colors"
+                        title="Reset Filters">
+                        <span class="material-symbols-outlined">restart_alt</span>
                     </button>
                 </div>
                 <div class="flex items-center gap-3">
                     <select
+                        x-model="risk"
+                        @change="loadPatients(1)"
                         class="bg-surface-container-low border-none rounded-xl px-4 py-3 text-sm font-medium text-on-surface-variant focus:ring-2 focus:ring-primary/20">
-                        <option>All Risk Levels</option>
-                        <option>High Risk</option>
-                        <option>Medium Risk</option>
-                        <option>Low Risk</option>
+                        <option value="all">All Risk Levels</option>
+                        <option value="high">High Risk</option>
+                        <option value="medium">Medium Risk</option>
+                        <option value="low">Low Risk</option>
                     </select>
                     <select
+                        x-model="protocol"
+                        @change="loadPatients(1)"
                         class="bg-surface-container-low border-none rounded-xl px-4 py-3 text-sm font-medium text-on-surface-variant focus:ring-2 focus:ring-primary/20">
-                        <option>All Protocols</option>
-                        <option>Fasting</option>
-                        <option>Intensive Insulin</option>
-                        <option>Maintenance</option>
+                        <option value="all">All Protocols</option>
+                        @foreach($protocols as $p)
+                            <option value="{{ $p->id }}">{{ $p->name }}</option>
+                        @endforeach
                     </select>
                     <input
+                        x-model="date"
+                        @change="loadPatients(1)"
                         class="bg-surface-container-low border-none rounded-xl px-4 py-3 text-sm font-medium text-on-surface-variant focus:ring-2 focus:ring-primary/20"
                         type="date" />
                 </div>
@@ -133,29 +137,30 @@
             <x-patient-table ::patients="patients" ::loading="loading" />
             <!-- Pagination -->
             <div
-                class="p-6 flex items-center justify-between bg-surface-container-lowest">
-                <p class="text-sm text-on-surface-variant">Showing <span
-                        class="font-bold">1-10</span> of <span
-                        class="font-bold">1,284</span> patients</p>
-                <div class="flex items-center gap-2">
+                class="p-6 flex items-center justify-between bg-surface-container-lowest border-t border-surface-container">
+                <p class="text-sm text-on-surface-variant" x-show="pagination.total > 0">
+                    Showing <span class="font-bold" x-text="(pagination.current_page - 1) * 10 + 1"></span> to
+                    <span class="font-bold" x-text="Math.min(pagination.current_page * 10, pagination.total)"></span> of
+                    <span class="font-bold" x-text="pagination.total"></span> patients
+                </p>
+                <p class="text-sm text-on-surface-variant" x-show="pagination.total === 0">
+                    Showing 0 patients
+                </p>
+                <div class="flex items-center gap-3" x-show="pagination.last_page > 1">
                     <button
-                        class="p-2 rounded-lg bg-surface-container-high text-on-surface-variant hover:bg-surface-variant transition-colors disabled:opacity-50"
-                        disabled="">
+                        @click="loadPatients(pagination.current_page - 1)"
+                        :disabled="pagination.current_page === 1"
+                        class="p-2 rounded-lg bg-surface-container-high text-on-surface-variant hover:bg-surface-variant transition-colors disabled:opacity-50">
                         <span class="material-symbols-outlined">chevron_left</span>
                     </button>
+                    <span class="text-xs font-semibold text-on-surface-variant">
+                        Page <span x-text="pagination.current_page"></span> of <span x-text="pagination.last_page"></span>
+                    </span>
                     <button
-                        class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm">1</button>
-                    <button
-                        class="px-4 py-2 rounded-lg hover:bg-surface-container-high text-on-surface font-medium text-sm transition-colors">2</button>
-                    <button
-                        class="px-4 py-2 rounded-lg hover:bg-surface-container-high text-on-surface font-medium text-sm transition-colors">3</button>
-                    <span class="text-on-surface-variant">...</span>
-                    <button
-                        class="px-4 py-2 rounded-lg hover:bg-surface-container-high text-on-surface font-medium text-sm transition-colors">129</button>
-                    <button
-                        class="p-2 rounded-lg bg-surface-container-high text-on-surface-variant hover:bg-surface-variant transition-colors">
-                        <span
-                            class="material-symbols-outlined">chevron_right</span>
+                        @click="loadPatients(pagination.current_page + 1)"
+                        :disabled="pagination.current_page === pagination.last_page"
+                        class="p-2 rounded-lg bg-surface-container-high text-on-surface-variant hover:bg-surface-variant transition-colors disabled:opacity-50">
+                        <span class="material-symbols-outlined">chevron_right</span>
                     </button>
                 </div>
             </div>
@@ -172,6 +177,10 @@
                 total_patients: 0,
                 protocol_patients: 0,
                 high_risk_patients: 0,
+                search: '',
+                risk: 'all',
+                protocol: 'all',
+                date: '',
 
                 async init() {
                     await this.loadPatients()
@@ -181,8 +190,16 @@
                     try {
                         this.loading = true
 
+                        const queryParams = new URLSearchParams({
+                            page: page,
+                            search: this.search,
+                            risk: this.risk,
+                            protocol: this.protocol,
+                            date: this.date
+                        });
+
                         const response = await fetch(
-                            `/patients/data?page=${page}`
+                            `/patients/data?${queryParams.toString()}`
                         )
 
                         const result = await response.json()
@@ -191,8 +208,7 @@
                         this.pagination = result.pagination;
                         this.total_patients = result.stats.total_patients;
                         this.protocol_patients = result.stats.protocol_patients;
-                        this.high_risk_patients = result.stats
-                            .high_risk_patients;
+                        this.high_risk_patients = result.stats.high_risk_patients;
 
                     } catch (error) {
                         console.error(error)
