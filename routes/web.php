@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CmsContentController;
 use App\Http\Controllers\FastingProtocolController;
 use App\Http\Controllers\PatientController;
+use App\Http\Controllers\FgbMonitoringController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -23,9 +24,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/patients', [PatientController::class, 'index'])->name('patients-management');
     Route::get('/patients/data', [PatientController::class, 'loadPatients']);
 
-    Route::get('/fgb-monitoring', function () {
-        return view('fgb-monitoring.index');
-    })->name('fgb-monitoring');
+    Route::get('/fgb-monitoring', [FgbMonitoringController::class, 'index'])->name('fgb-monitoring');
+    Route::get('/fgb-monitoring/data', [FgbMonitoringController::class, 'loadLogs']);
+    Route::get('/fgb-monitoring/chart', [FgbMonitoringController::class, 'chartData']);
+    Route::get('/fgb-monitoring/patients/{userId}', [FgbMonitoringController::class, 'patientDetail']);
 
     Route::get('/cms', [CmsContentController::class, 'index'])->name('cms');
     Route::post('/cms/create', [CmsContentController::class, 'store'])->name('cms-store');

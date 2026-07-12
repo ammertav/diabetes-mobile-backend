@@ -2,14 +2,16 @@
     class="p-6 bg-surface-container-lowest border-b border-surface-container flex flex-wrap items-center justify-between gap-4">
     <div class="flex items-center gap-4 flex-1 min-w-75">
         <div class="relative flex-1">
+            <div
+                class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-outline">
+                <span class="material-symbols-outlined">search</span>
+            </div>
             <input
                 x-model="search"
                 @input.debounce.300ms="loadPatients(1)"
-                class="w-full bg-surface-container-low border-none rounded-xl px-10 py-3 text-sm focus:ring-2 focus:ring-primary/20"
+                class="w-full bg-surface-container-low border-none rounded-xl pl-10 pr-4 py-3 text-sm focus:ring-2 focus:ring-primary/20"
                 placeholder="Search by name, email or protocol..."
                 type="text" />
-            <span
-                class="material-symbols-outlined absolute left-3 top-3 text-outline">search</span>
         </div>
         <button
             @click="search = ''; risk = 'all'; protocol = 'all'; date = ''; loadPatients(1);"
