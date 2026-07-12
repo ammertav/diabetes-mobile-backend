@@ -1,8 +1,6 @@
 @extends('layouts.app')
 @section('content')
     <div x-data="fgbMonitoringPage()" x-init="init()">
-        @include('fgb-monitoring.partials._header')
-        
         @include('fgb-monitoring.partials._stats')
 
         @include('fgb-monitoring.partials._chart')
@@ -46,8 +44,9 @@
                     try {
                         this.showDetailModal = true
                         this.detailLoading = true
-                        
-                        const response = await fetch(`/fgb-monitoring/patients/${userId}`)
+
+                        const response = await fetch(
+                            `/fgb-monitoring/patients/${userId}`)
                         const result = await response.json()
 
                         this.detailPatient = result.patient
