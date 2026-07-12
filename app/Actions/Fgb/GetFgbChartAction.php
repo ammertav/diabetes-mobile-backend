@@ -34,6 +34,7 @@ class GetFgbChartAction
                     'label' => $startOfWeek->format('M') . ' W' . $startOfWeek->weekOfMonth,
                     'value' => round($avg, 1),
                     'is_current' => ($i === 0),
+                    'index' => $i,
                 ];
             }
         } elseif ($period === 'monthly') {
@@ -51,6 +52,7 @@ class GetFgbChartAction
                     'label' => $date->format('M'),
                     'value' => round($avg, 1),
                     'is_current' => $date->isCurrentMonth(),
+                    'index' => $i,
                 ];
             }
         } else {
@@ -66,6 +68,7 @@ class GetFgbChartAction
                     'label' => $date->format('D'),
                     'value' => round($avg, 1),
                     'is_current' => $date->isToday(),
+                    'index' => $i,
                 ];
             }
         }

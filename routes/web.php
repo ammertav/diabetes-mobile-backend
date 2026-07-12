@@ -27,6 +27,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/fgb-monitoring', [FgbMonitoringController::class, 'index'])->name('fgb-monitoring');
     Route::get('/fgb-monitoring/data', [FgbMonitoringController::class, 'loadLogs']);
     Route::get('/fgb-monitoring/chart', [FgbMonitoringController::class, 'chartData']);
+    Route::get('/fgb-monitoring/chart-details', [FgbMonitoringController::class, 'chartDetails']);
     Route::get('/fgb-monitoring/patients/{userId}', [FgbMonitoringController::class, 'patientDetail']);
 
     Route::get('/cms', [CmsContentController::class, 'index'])->name('cms');

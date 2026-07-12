@@ -50,4 +50,20 @@ class FgbMonitoringController extends Controller
             ]
         ]);
     }
+
+    public function chartDetails(Request $request, \App\Actions\Fgb\GetFgbChartDetailsAction $action)
+    {
+        $period = $request->input('period', 'daily');
+        $group = $request->input('group', 'all');
+        $index = (int) $request->input('index', 0);
+
+        $result = $action->execute($period, $group, $index);
+
+        return response()->json([
+            'title' => $result['title'],
+            'avg_fgb' => $result['avg_fgb'],
+            'count' => $result['count'],
+            'records' => FgbLogResource::collection($result['records'])->response()->getData(true),
+        ]);
+    }
 }

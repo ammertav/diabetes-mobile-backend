@@ -8,6 +8,8 @@
         @include('fgb-monitoring.partials._table')
 
         @include('fgb-monitoring.partials._modal-detail')
+
+        @include('fgb-monitoring.partials._modal-chart-detail')
     </div>
 @endsection
 
@@ -29,6 +31,12 @@
                 chartGroup: 'all',
                 chartData: [],
                 hoveredChartLabel: null,
+                showChartDetailModal: false,
+                chartDetailLoading: false,
+                chartDetailRecords: [],
+                selectedChartTitle: '',
+                selectedChartAvg: 0,
+                selectedChartCount: 0,
                 showDetailModal: false,
                 detailLoading: false,
                 detailPatient: {},
@@ -61,6 +69,36 @@
 
                 closePatientDetail() {
                     this.showDetailModal = false
+                },
+
+                async openChartDetail(index, label) {
+                    try {
+                        this.showChartDetailModal = true
+                        this.chartDetailLoading = true
+                        this.selectedChartTitle = label
+                        
+                        const queryParams = new URLSearchParams({
+                            period: this.chartPeriod,
+                            group: this.chartGroup,
+                            index: index
+                        });
+
+                        const response = await fetch(`/fgb-monitoring/chart-details?${queryParams.toString()}`)
+                        const result = await response.json()
+
+                        this.selectedChartTitle = result.title
+                        this.selectedChartAvg = result.avg_fgb
+                        this.selectedChartCount = result.count
+                        this.chartDetailRecords = result.records.data || result.records
+                    } catch (error) {
+                        console.error(error)
+                    } finally {
+                        this.chartDetailLoading = false
+                    }
+                },
+
+                closeChartDetail() {
+                    this.showChartDetailModal = false
                 },
 
                 async loadChartData() {

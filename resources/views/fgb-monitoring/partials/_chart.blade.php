@@ -49,6 +49,7 @@
                 <div
                     @mouseenter="hoveredChartLabel = item.label"
                     @mouseleave="hoveredChartLabel = null"
+                    @click="openChartDetail(item.index, item.label)"
                     :class="(hoveredChartLabel === null ? item.is_current : item.label === hoveredChartLabel) ? 'bg-primary shadow-md scale-[1.02]' : 'bg-primary/20 hover:bg-primary/40 scale-100'"
                     class="flex-1 rounded-t-lg relative cursor-pointer transition-all duration-200"
                     :style="'height: ' + Math.min(Math.max((item.value / 250) * 100, 10), 100) + '%'">
