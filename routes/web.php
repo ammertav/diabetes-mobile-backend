@@ -38,4 +38,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/cms/{id}', [CmsContentController::class, 'destroy'])->name('cms-destroy');
 
     Route::get('/fasting-protocols', [FastingProtocolController::class, 'index'])->name('fasting-protocols');
+    Route::get('/fasting-protocols/create', [FastingProtocolController::class, 'create'])->name('fasting-protocols-create');
+    Route::post('/fasting-protocols', [FastingProtocolController::class, 'store'])->name('fasting-protocols-store');
+    Route::delete('/fasting-protocols/{id}', [FastingProtocolController::class, 'destroy'])->name('fasting-protocols-destroy');
 });
