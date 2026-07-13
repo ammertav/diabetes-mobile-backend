@@ -89,3 +89,61 @@ test('admin can access chart details with correct parameters', function () {
     $this->assertEquals(112.5, $data[0]['value_mg_dl']);
     $this->assertEquals('John Doe', $data[0]['patient_name']);
 });
+
+test('admin can fetch logs and dynamic stats contains avg_fgb_diff', function () {
+    /** @var \Illuminate\Foundation\Testing\TestCase $this */
+    
+    // Create patient and logs for this week and last week
+    $patient = User::create([
+        'email' => 'patient2@example.com',
+        'type' => UserType::MOBILE,
+    ]);
+
+    MobileProfile::create([
+        'user_id' => $patient->id,
+        'name' => 'Jane Doe',
+        'age' => 45,
+        'gender' => Gender::FEMALE,
+        'diabetes_status' => DiabetesStatus::PREDIABETES,
+        'bmi' => 26.5,
+        'disclaimer_accepted' => true,
+    ]);
+
+    // Log this week: 120
+    FgbRecord::create([
+        'user_id' => $patient->id,
+        'value_mg_dl' => 120.0,
+        'context_tag' => 'morning',
+        'is_fasting_day' => true,
+        'client_timestamp' => Carbon::now(),
+        'server_timestamp' => Carbon::now(),
+    ]);
+
+    // Log last week (10 days ago): 100
+    FgbRecord::create([
+        'user_id' => $patient->id,
+        'value_mg_dl' => 100.0,
+        'context_tag' => 'morning',
+        'is_fasting_day' => true,
+        'client_timestamp' => Carbon::now()->subDays(10),
+        'server_timestamp' => Carbon::now()->subDays(10),
+    ]);
+
+    $response = $this->actingAs($this->admin)->getJson('/fgb-monitoring/data');
+
+    $response->assertStatus(200)
+        ->assertJsonStructure([
+            'stats' => [
+                'avg_fgb',
+                'avg_fgb_diff',
+                'target_range_percent',
+                'abnormal_alerts',
+            ],
+            'logs'
+        ]);
+
+    $stats = $response->json('stats');
+    $this->assertEquals(120, $stats['avg_fgb']);
+    // Diff should be ((120 - 100) / 100) * 100 = +20.0%
+    $this->assertEquals(20.0, $stats['avg_fgb_diff']);
+});

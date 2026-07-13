@@ -14,7 +14,19 @@ class ListFgbLogsAction
         $query = FgbRecord::query()
             ->with(['user.mobileProfile']);
 
-        // Search patient name or email
+        $this->applyFilters($query, $dto);
+
+        $logs = $query->latest('server_timestamp')
+            ->paginate(10, ['*'], 'page', $dto->page);
+
+        return [
+            'stats' => $this->calculateStats(),
+            'logs' => $logs,
+        ];
+    }
+
+    private function applyFilters($query, FgbLogFilterData $dto): void
+    {
         if ($dto->search) {
             $search = '%' . $dto->search . '%';
             $query->whereHas('user', function ($qu) use ($search) {
@@ -25,32 +37,43 @@ class ListFgbLogsAction
             });
         }
 
-        // Filter by status
         if ($dto->status && $dto->status !== 'all') {
-            switch ($dto->status) {
-                case 'normal':
-                    $query->whereBetween('value_mg_dl', [70, 99.9]);
-                    break;
-                case 'elevated':
-                    $query->whereBetween('value_mg_dl', [100, 140]);
-                    break;
-                case 'high':
-                    $query->where('value_mg_dl', '>', 140);
-                    break;
-                case 'low':
-                    $query->where('value_mg_dl', '<', 70);
-                    break;
-            }
+            $this->applyStatusFilter($query, $dto->status);
         }
+    }
 
-        $logs = $query->latest('server_timestamp')->paginate(10, ['*'], 'page', $dto->page);
+    private function applyStatusFilter($query, string $status): void
+    {
+        switch ($status) {
+            case 'normal':
+                $query->whereBetween('value_mg_dl', [70, 99.9]);
+                break;
+            case 'elevated':
+                $query->whereBetween('value_mg_dl', [100, 140]);
+                break;
+            case 'high':
+                $query->where('value_mg_dl', '>', 140);
+                break;
+            case 'low':
+                $query->where('value_mg_dl', '<', 70);
+                break;
+        }
+    }
 
-        // Stats (last 7 days overall)
-        $sevenDaysAgo = Carbon::now()->subDays(7);
+    private function calculateStats(): array
+    {
+        $now = Carbon::now();
+        $sevenDaysAgo = $now->copy()->subDays(7);
+        $fourteenDaysAgo = $now->copy()->subDays(14);
+
         $recentFgbQuery = FgbRecord::where('server_timestamp', '>=', $sevenDaysAgo);
-
         $avgFgb = round($recentFgbQuery->avg('value_mg_dl') ?? 104);
-        
+
+        $avgFgbPrev = FgbRecord::whereBetween('server_timestamp', [$fourteenDaysAgo, $sevenDaysAgo])
+            ->avg('value_mg_dl') ?? 104;
+
+        $avgFgbDiff = $avgFgbPrev > 0 ? round((($avgFgb - $avgFgbPrev) / $avgFgbPrev) * 100, 1) : 0.0;
+
         $totalRecent = $recentFgbQuery->count();
         $inRangeRecent = FgbRecord::where('server_timestamp', '>=', $sevenDaysAgo)
             ->whereBetween('value_mg_dl', [70, 130])
@@ -62,12 +85,10 @@ class ListFgbLogsAction
             ->count();
 
         return [
-            'stats' => [
-                'avg_fgb' => $avgFgb,
-                'target_range_percent' => $targetRangePercent,
-                'abnormal_alerts' => $abnormalAlerts,
-            ],
-            'logs' => $logs,
+            'avg_fgb' => $avgFgb,
+            'avg_fgb_diff' => $avgFgbDiff,
+            'target_range_percent' => $targetRangePercent,
+            'abnormal_alerts' => $abnormalAlerts,
         ];
     }
 }

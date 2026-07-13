@@ -22,6 +22,7 @@
                 pagination: {},
                 stats: {
                     avg_fgb: 104,
+                    avg_fgb_diff: -4.2,
                     target_range_percent: 78.4,
                     abnormal_alerts: 0
                 },
@@ -112,7 +113,9 @@
                             `/fgb-monitoring/chart?${queryParams.toString()}`
                         )
 
-                        this.chartData = await response.json()
+                        const result = await response.json()
+                        this.chartData = result.chart_data
+                        this.stats = result.stats
                     } catch (error) {
                         console.error(error)
                     }
