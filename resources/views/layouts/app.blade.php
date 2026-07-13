@@ -58,14 +58,14 @@
     @stack('styles')
 </head>
 
-<body class="text-on-surface">
+<body class="text-on-surface bg-[#f8fafc] dark:bg-slate-950">
     <!-- SideNavBar (The Blade) -->
     <x-layouts.sidebar />
     <!-- Main Content Area -->
     <main class="ml-64 min-h-screen">
         <!-- TopNavBar -->
         <header
-            class="flex justify-between items-center px-8 w-full bg-white/80 backdrop-blur-xl sticky top-0 z-40 h-16 shadow-none">
+            class="flex justify-between items-center px-8 w-full bg-white/80 backdrop-blur-xl sticky top-0 z-40 h-16 border-b border-slate-100 dark:border-slate-800">
             <div class="flex items-center gap-8">
                 <div
                     class="text-xl font-bold text-blue-700 dark:text-blue-400 tracking-tight font-headline">

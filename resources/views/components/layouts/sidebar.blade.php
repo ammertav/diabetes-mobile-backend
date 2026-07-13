@@ -47,7 +47,7 @@
 @endphp
 
 <aside
-    class="h-screen w-64 fixed left-0 top-0 bg-slate-50 dark:bg-slate-900 flex flex-col py-6 px-4 space-y-2 overflow-y-auto z-50">
+    class="h-screen w-64 fixed left-0 top-0 bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 flex flex-col py-6 px-4 space-y-2 overflow-y-auto z-50">
     <div class="mb-8 px-2">
         <h1
             class="font-bold text-blue-700 dark:text-blue-400 font-headline text-xl">
