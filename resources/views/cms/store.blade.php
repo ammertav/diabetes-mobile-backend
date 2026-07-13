@@ -8,22 +8,27 @@
             <div class="mb-10 flex items-center gap-4">
                 <button
                     class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:bg-primary/10 hover:text-primary transition-all">
-                    <a href="{{ route('cms-create') }}">
+                    <a href="{{ route('cms') }}">
                         <span class="material-symbols-outlined">arrow_back</span>
                     </a>
                 </button>
                 <div>
                     <h2
                         class="font-headline text-3xl font-extrabold text-on-surface tracking-tight">
-                        Buat Konten Baru</h2>
+                        {{ $content ? 'Edit Konten' : 'Buat Konten Baru' }}</h2>
                     <p class="font-body text-on-surface-variant mt-1">Kelola
                         edukasi dan motivasi harian untuk pasien diabetes.</p>
                 </div>
             </div>
             <form
                 method="POST"
-                action="{{ route('cms-store') }}"
+                action="{{ $content ? route('cms-update', $content->id) : route('cms-store') }}"
                 class="space-y-8">
+                @csrf
+                @if($content)
+                    @method('PUT')
+                @endif
+
                 <!-- Title Input -->
                 <div class="group">
                     <label
@@ -32,8 +37,12 @@
                     <input
                         class="w-full bg-surface-container-highest border-none rounded-xl px-5 py-4 text-on-surface font-body focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/40 transition-all outline-none"
                         name="title" id="input_judul"
+                        value="{{ old('title', $content->title ?? '') }}"
                         placeholder="Masukkan judul menarik di sini..."
                         type="text" />
+                    @error('title')
+                        <span class="text-xs text-red-500 font-medium mt-1 block">{{ $message }}</span>
+                    @enderror
                 </div>
                 <div class="grid grid-cols-1 gap-6">
                     <!-- Content Type Dropdown -->
@@ -46,7 +55,7 @@
                                 class="w-full appearance-none bg-surface-container-highest border-none rounded-xl px-5 py-4 text-on-surface font-body focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/40 transition-all outline-none"
                                 name="type" id="input_tipe">
                                 @foreach (\App\Enums\CmsContentType::cases() as $type)
-                                    <option value="{{ $type->value }}">
+                                    <option value="{{ $type->value }}" {{ old('type', $content->content_type->value ?? '') == $type->value ? 'selected' : '' }}>
                                         {{ $type->label() }}
                                     </option>
                                 @endforeach
@@ -62,9 +71,10 @@
                             <select
                                 name="day_context"
                                 class="w-full appearance-none bg-surface-container-highest border-none rounded-xl px-5 py-4 text-on-surface font-body focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/40 transition-all outline-none">
-                                @foreach (\App\Enums\CmsDayContext::cases() as $type)
-                                    <option value="{{ $type->value }}">
-                                        {{ $type->label() }}
+                                <option value="">Tanpa Konteks Hari</option>
+                                @foreach (\App\Enums\CmsDayContext::cases() as $context)
+                                    <option value="{{ $context->value }}" {{ old('day_context', $content->day_context->value ?? '') == $context->value ? 'selected' : '' }}>
+                                        {{ $context->label() }}
                                     </option>
                                 @endforeach
                             </select>
@@ -79,7 +89,10 @@
                     <textarea
                         class="w-full bg-surface-container-highest border-none rounded-xl px-5 py-4 text-on-surface font-body focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/40 transition-all outline-none resize-none"
                         name="body" id="input_isi"
-                        placeholder="Tuliskan pesan motivasi atau edukasi Anda..." rows="6"></textarea>
+                        placeholder="Tuliskan pesan motivasi atau edukasi Anda..." rows="6">{{ old('body', $content->body ?? '') }}</textarea>
+                    @error('body')
+                        <span class="text-xs text-red-500 font-medium mt-1 block">{{ $message }}</span>
+                    @enderror
                 </div>
                 <!-- Publishing Status -->
                 <div class="flex items-center gap-12">
@@ -99,7 +112,7 @@
                                         type="radio"
                                         name="is_published"
                                         value="0"
-                                        checked
+                                        {{ old('is_published', isset($content) ? ($content->is_published ? '1' : '0') : '0') == '0' ? 'checked' : '' }}
                                         class="peer sr-only" />
 
                                     <!-- Outer -->
@@ -129,6 +142,7 @@
                                         type="radio"
                                         name="is_published"
                                         value="1"
+                                        {{ old('is_published', isset($content) ? ($content->is_published ? '1' : '0') : '0') == '1' ? 'checked' : '' }}
                                         class="peer sr-only" />
 
                                     <!-- Outer -->
@@ -153,15 +167,14 @@
                 </div>
                 <!-- Actions -->
                 <div class="pt-6 flex items-center gap-4">
-                    <button
-                        class="px-8 py-3.5 bg-surface-container-high text-on-surface font-headline font-bold rounded-xl hover:bg-surface-container-highest transition-all"
-                        type="button">
+                    <a href="{{ route('cms') }}"
+                        class="px-8 py-3.5 bg-surface-container-high text-on-surface font-headline font-bold rounded-xl hover:bg-surface-container-highest transition-all block">
                         Batal
-                    </button>
+                    </a>
                     <button
                         class="px-10 py-3.5 bg-primary text-white font-headline font-extrabold rounded-xl shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5 transition-all active:scale-95"
                         type="submit">
-                        Publikasikan Sekarang
+                        {{ $content ? 'Simpan Perubahan' : 'Simpan' }}
                     </button>
                 </div>
             </form>

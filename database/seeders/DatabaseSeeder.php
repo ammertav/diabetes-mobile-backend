@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             FastingProtocolSeeder::class,
             FakePatientsSeeder::class,
             FgbRecordSeeder::class,
+            CmsContentSeeder::class,
         ]);
     }
 }

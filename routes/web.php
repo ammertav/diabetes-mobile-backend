@@ -31,8 +31,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/fgb-monitoring/patients/{userId}', [FgbMonitoringController::class, 'patientDetail']);
 
     Route::get('/cms', [CmsContentController::class, 'index'])->name('cms');
-    Route::post('/cms/create', [CmsContentController::class, 'store'])->name('cms-store');
     Route::get('/cms/create', [CmsContentController::class, 'create'])->name('cms-create');
+    Route::post('/cms', [CmsContentController::class, 'store'])->name('cms-store');
+    Route::get('/cms/{id}/edit', [CmsContentController::class, 'edit'])->name('cms-edit');
+    Route::put('/cms/{id}', [CmsContentController::class, 'update'])->name('cms-update');
+    Route::delete('/cms/{id}', [CmsContentController::class, 'destroy'])->name('cms-destroy');
 
     Route::get('/fasting-protocols', [FastingProtocolController::class, 'index'])->name('fasting-protocols');
 });
