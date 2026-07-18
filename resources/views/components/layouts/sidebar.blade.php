@@ -34,8 +34,8 @@
         [
             'label' => 'Fasting Logs',
             'icon' => 'list_alt',
-            'route' => 'logs',
-            'isActive' => request()->routeIs('logs'),
+            'route' => 'fasting-logs',
+            'isActive' => request()->routeIs('fasting-logs') || request()->is('fasting-logs*'),
         ],
         [
             'label' => 'Audit Trail',

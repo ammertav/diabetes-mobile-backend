@@ -22,7 +22,7 @@
         ],
         [
             'label' => 'Fasting Logs',
-            'isActive' => request()->routeIs('logs') || request()->is('logs*'),
+            'isActive' => request()->routeIs('fasting-logs') || request()->is('fasting-logs*'),
         ],
         [
             'label' => 'Audit Trail',

@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FastingProtocolController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\FgbMonitoringController;
+use App\Http\Controllers\FastingLogWebController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -41,4 +42,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/fasting-protocols', [FastingProtocolController::class, 'store'])->name('fasting-protocols-store');
     Route::put('/fasting-protocols/{id}', [FastingProtocolController::class, 'update'])->name('fasting-protocols-update');
     Route::delete('/fasting-protocols/{id}', [FastingProtocolController::class, 'destroy'])->name('fasting-protocols-destroy');
+
+    Route::get('/fasting-logs', [FastingLogWebController::class, 'index'])->name('fasting-logs');
+    Route::get('/fasting-logs/data', [FastingLogWebController::class, 'loadLogs'])->name('fasting-logs-data');
 });
