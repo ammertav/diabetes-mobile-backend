@@ -20,6 +20,8 @@ class FastingProtocolSeeder extends Seeder
                     'id' => $protocolId,
                     'name' => $data['name'],
                     'type' => $data['type'],
+                    'start_time' => $data['start_time'] ?? '18:00',
+                    'end_time' => $data['end_time'] ?? '10:00',
                     'duration_hours' => $data['duration_hours'] ?? null,
                     'description' => $data['description'] ?? null,
                     'created_at' => now(),
@@ -49,6 +51,8 @@ class FastingProtocolSeeder extends Seeder
             $createProtocol([
                 'name' => 'Puasa Senin-Kamis',
                 'type' => 'sunnah',
+                'start_time' => '18:00',
+                'end_time' => '07:00',
                 'duration_hours' => 13,
                 'description' => 'Puasa sunnah setiap hari Senin dan Kamis',
             ], [1, 4]);
@@ -57,6 +61,8 @@ class FastingProtocolSeeder extends Seeder
             $createProtocol([
                 'name' => 'Puasa Daud (Sample)',
                 'type' => 'sunnah',
+                'start_time' => '18:00',
+                'end_time' => '07:00',
                 'duration_hours' => 13,
                 'description' => 'Puasa selang-seling (contoh hari tetap untuk simulasi)',
             ], [1, 3, 5]);
@@ -65,6 +71,8 @@ class FastingProtocolSeeder extends Seeder
             $createProtocol([
                 'name' => 'Intermittent Fasting 16:8',
                 'type' => 'intermittent',
+                'start_time' => '20:00',
+                'end_time' => '12:00',
                 'duration_hours' => 16,
                 'description' => 'Puasa 16 jam setiap hari',
             ], [1, 2, 3, 4, 5, 6, 7]);
@@ -73,6 +81,8 @@ class FastingProtocolSeeder extends Seeder
             $createProtocol([
                 'name' => 'Intermittent 14:10 (Weekdays)',
                 'type' => 'intermittent',
+                'start_time' => '20:00',
+                'end_time' => '10:00',
                 'duration_hours' => 14,
                 'description' => 'Puasa hanya hari kerja',
             ], [1, 2, 3, 4, 5]);
@@ -81,6 +91,8 @@ class FastingProtocolSeeder extends Seeder
             $createProtocol([
                 'name' => 'Weekend Fasting',
                 'type' => 'custom',
+                'start_time' => '20:00',
+                'end_time' => '08:00',
                 'duration_hours' => 12,
                 'description' => 'Puasa hanya di akhir pekan',
             ], [6, 7]);

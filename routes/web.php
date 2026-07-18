@@ -39,5 +39,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/fasting-protocols', [FastingProtocolController::class, 'index'])->name('fasting-protocols');
     Route::get('/fasting-protocols/create', [FastingProtocolController::class, 'create'])->name('fasting-protocols-create');
     Route::post('/fasting-protocols', [FastingProtocolController::class, 'store'])->name('fasting-protocols-store');
+    Route::put('/fasting-protocols/{id}', [FastingProtocolController::class, 'update'])->name('fasting-protocols-update');
     Route::delete('/fasting-protocols/{id}', [FastingProtocolController::class, 'destroy'])->name('fasting-protocols-destroy');
 });

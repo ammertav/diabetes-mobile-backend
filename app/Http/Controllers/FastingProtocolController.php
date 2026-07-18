@@ -25,6 +25,8 @@ class FastingProtocolController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', 'string', 'in:sunnah,intermittent,custom'],
+            'start_time' => ['nullable', 'string', 'max:10'],
+            'end_time' => ['nullable', 'string', 'max:10'],
             'duration_hours' => ['required', 'integer', 'min:1', 'max:168'],
             'description' => ['nullable', 'string'],
             'days' => ['required', 'array', 'min:1'],
@@ -35,6 +37,8 @@ class FastingProtocolController extends Controller
             $protocol = FastingProtocol::create([
                 'name' => $validated['name'],
                 'type' => $validated['type'],
+                'start_time' => $validated['start_time'] ?? '18:00',
+                'end_time' => $validated['end_time'] ?? '10:00',
                 'duration_hours' => $validated['duration_hours'],
                 'description' => $validated['description'] ?? null,
             ]);
@@ -50,6 +54,16 @@ class FastingProtocolController extends Controller
         return redirect()
             ->route('fasting-protocols')
             ->with('success', 'Protokol puasa berhasil dibuat.');
+    }
+
+    public function update(\App\Http\Requests\UpdateFastingProtocolRequest $request, string $id, \App\Actions\Fasting\UpdateFastingProtocolAction $action)
+    {
+        $protocol = FastingProtocol::findOrFail($id);
+        $action->execute($protocol, $request->validated());
+
+        return redirect()
+            ->route('fasting-protocols')
+            ->with('success', 'Protokol puasa berhasil diperbarui.');
     }
 
     public function destroy(string $id)
