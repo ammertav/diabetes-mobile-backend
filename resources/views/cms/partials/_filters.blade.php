@@ -7,7 +7,7 @@
         <input
             name="search"
             value="{{ request('search') }}"
-            class="w-full pl-12 pr-4 py-3 bg-surface-container-highest border-none rounded-xl focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all placeholder:text-on-surface-variant/60 text-sm text-on-surface font-medium"
+            class="w-full pl-12 pr-4 py-3 bg-surface-container-highest border-none rounded-xl focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all placeholder:text-on-surface-variant/60 text-sm text-on-surface font-medium"
             placeholder="Cari judul atau ID konten..." type="text"
             onchange="this.form.submit()" />
     </div>
@@ -15,7 +15,7 @@
         <select
             name="type"
             onchange="this.form.submit()"
-            class="w-full pl-4 pr-10 py-3 bg-surface-container-highest border-none rounded-xl appearance-none bg-none focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all cursor-pointer text-sm text-on-surface-variant font-medium">
+            class="w-full pl-4 pr-10 py-3 bg-surface-container-highest border-none rounded-xl appearance-none bg-none focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all cursor-pointer text-sm text-on-surface-variant font-medium">
             <option value="">Semua Tipe Konten</option>
             @foreach(App\Enums\CmsContentType::cases() as $type)
                 <option value="{{ $type->value }}" {{ request('type') == $type->value ? 'selected' : '' }}>
@@ -32,7 +32,7 @@
         <select
             name="day_context"
             onchange="this.form.submit()"
-            class="w-full pl-4 pr-10 py-3 bg-surface-container-highest border-none rounded-xl appearance-none bg-none focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all cursor-pointer text-sm text-on-surface-variant font-medium">
+            class="w-full pl-4 pr-10 py-3 bg-surface-container-highest border-none rounded-xl appearance-none bg-none focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all cursor-pointer text-sm text-on-surface-variant font-medium">
             <option value="">Semua Konteks Hari</option>
             @foreach(App\Enums\CmsDayContext::cases() as $context)
                 <option value="{{ $context->value }}" {{ request('day_context') == $context->value ? 'selected' : '' }}>

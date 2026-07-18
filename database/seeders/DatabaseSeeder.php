@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             FakePatientsSeeder::class,
             FgbRecordSeeder::class,
             CmsContentSeeder::class,
+            FastingLogSeeder::class,
         ]);
     }
 }

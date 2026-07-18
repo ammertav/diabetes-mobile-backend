@@ -1,17 +1,15 @@
 @extends('layouts.app')
 @section('content')
-    @include('patients-management.partials._header')
-
     <div
         x-data="patientManagementPage()"
         x-init="init()">
-        
+
         @include('patients-management.partials._stats')
 
         <!-- Content Area: Registry Table -->
         <div
             class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
-            
+
             @include('patients-management.partials._filters')
 
             <!-- Table -->
@@ -63,7 +61,8 @@
                         this.pagination = result.pagination;
                         this.total_patients = result.stats.total_patients;
                         this.protocol_patients = result.stats.protocol_patients;
-                        this.high_risk_patients = result.stats.high_risk_patients;
+                        this.high_risk_patients = result.stats
+                            .high_risk_patients;
 
                     } catch (error) {
                         console.error(error)

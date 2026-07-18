@@ -49,14 +49,12 @@
                             x-text="protocol.type">
                         </span>
                         
-                        <!-- Delete Form -->
-                        <form :action="'/fasting-protocols/' + protocol.id" method="POST" class="inline" @click.stop="" onsubmit="return confirm('Apakah Anda yakin ingin menghapus protokol ini?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="text-slate-300 hover:text-error transition-colors">
-                                <span class="material-symbols-outlined text-lg">delete</span>
-                            </button>
-                        </form>
+                        <!-- Delete Button -->
+                        <button type="button" 
+                            @click.stop="deleteActionUrl = '/fasting-protocols/' + protocol.id; showDeleteModal = true"
+                            class="text-slate-300 hover:text-error transition-colors">
+                            <span class="material-symbols-outlined text-lg">delete</span>
+                        </button>
                     </div>
                     <h4 class="text-lg font-bold text-on-surface mb-2 font-headline" x-text="protocol.name"></h4>
                     <p class="text-on-surface-variant text-xs mb-4 font-body line-clamp-2" x-text="protocol.description || 'Tidak ada deskripsi'"></p>

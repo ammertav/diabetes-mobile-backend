@@ -24,7 +24,7 @@
         <select
             x-model="risk"
             @change="loadPatients(1)"
-            class="bg-surface-container-low border-none rounded-xl px-4 py-3 text-sm font-medium text-on-surface-variant focus:ring-2 focus:ring-primary/20">
+            class="bg-surface-container-low border-none rounded-xl pl-4 pr-10 py-3 text-sm font-medium text-on-surface-variant focus:ring-2 focus:ring-primary/20">
             <option value="all">All Risk Levels</option>
             <option value="high">High Risk</option>
             <option value="medium">Medium Risk</option>
@@ -33,7 +33,7 @@
         <select
             x-model="protocol"
             @change="loadPatients(1)"
-            class="bg-surface-container-low border-none rounded-xl px-4 py-3 text-sm font-medium text-on-surface-variant focus:ring-2 focus:ring-primary/20">
+            class="bg-surface-container-low border-none rounded-xl pl-4 pr-10 py-3 text-sm font-medium text-on-surface-variant focus:ring-2 focus:ring-primary/20">
             <option value="all">All Protocols</option>
             @foreach($protocols as $p)
                 <option value="{{ $p->id }}">{{ $p->name }}</option>

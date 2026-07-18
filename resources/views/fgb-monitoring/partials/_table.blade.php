@@ -7,7 +7,7 @@
             <select
                 x-model="status"
                 @change="loadLogs(1)"
-                class="bg-surface-container-low border-none rounded-xl text-sm font-semibold px-4 py-2.5 focus:ring-primary/20 text-on-surface-variant">
+                class="bg-surface-container-low border-none rounded-xl text-sm font-semibold pl-4 pr-10 py-2.5 focus:ring-primary/20 text-on-surface-variant">
                 <option value="all">All Statuses</option>
                 <option value="normal">Normal (70-100)</option>
                 <option value="elevated">Elevated (100-140)</option>

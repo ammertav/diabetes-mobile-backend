@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CmsContentController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FastingProtocolController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\FgbMonitoringController;
@@ -17,9 +18,7 @@ Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    Route::get('/', function () {
-        return view('dashboard.index');
-    })->name('dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/patients', [PatientController::class, 'index'])->name('patients-management');
     Route::get('/patients/data', [PatientController::class, 'loadPatients']);
