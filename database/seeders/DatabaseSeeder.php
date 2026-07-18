@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             FgbRecordSeeder::class,
             CmsContentSeeder::class,
             FastingLogSeeder::class,
+            AuditTrailSeeder::class,
         ]);
     }
 }

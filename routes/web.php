@@ -7,6 +7,7 @@ use App\Http\Controllers\FastingProtocolController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\FgbMonitoringController;
 use App\Http\Controllers\FastingLogWebController;
+use App\Http\Controllers\AuditTrailController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -45,4 +46,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/fasting-logs', [FastingLogWebController::class, 'index'])->name('fasting-logs');
     Route::get('/fasting-logs/data', [FastingLogWebController::class, 'loadLogs'])->name('fasting-logs-data');
+
+    Route::get('/audit-trail', [AuditTrailController::class, 'index'])->name('audit-trail');
+    Route::get('/audit-trail/data', [AuditTrailController::class, 'loadLogs'])->name('audit-trail-data');
 });

@@ -2,10 +2,10 @@
     <p class="text-sm text-on-surface-variant" x-show="pagination.total > 0">
         Menampilkan <span class="font-bold text-on-surface" x-text="(pagination.current_page - 1) * 10 + 1"></span> -
         <span class="font-bold text-on-surface" x-text="Math.min(pagination.current_page * 10, pagination.total)"></span> dari
-        <span class="font-bold text-on-surface" x-text="pagination.total"></span> catatan puasa
+        <span class="font-bold text-on-surface" x-text="pagination.total"></span> log aktivitas
     </p>
     <p class="text-sm text-on-surface-variant" x-show="!pagination.total || pagination.total === 0">
-        Menampilkan 0 catatan
+        Menampilkan 0 log
     </p>
     <div class="flex items-center gap-3" x-show="pagination.last_page > 1">
         <button type="button"

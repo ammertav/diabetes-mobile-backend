@@ -1,7 +1,7 @@
 <div class="overflow-x-auto">
     <table class="w-full text-left border-collapse">
         <thead>
-            <tr class="bg-surface-container-low text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800">
+            <tr class="bg-slate-50/80 text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
                 <th class="py-4 px-6">Pasien</th>
                 <th class="py-4 px-6">Protokol Puasa</th>
                 <th class="py-4 px-6">Tanggal & Jadwal</th>
@@ -10,7 +10,7 @@
                 <th class="py-4 px-6 text-right">Aksi</th>
             </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-xs font-body">
+        <tbody class="divide-y divide-slate-100 text-xs font-body">
             <!-- Loading State -->
             <template x-if="loading">
                 <tr>
@@ -33,14 +33,14 @@
 
             <!-- Data Rows -->
             <template x-for="(log, idx) in logs" :key="log.id || idx">
-                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                <tr class="hover:bg-slate-50/60 transition-colors">
                     <!-- Pasien -->
                     <td class="py-4 px-6">
                         <div class="flex items-center gap-3">
-                            <img :src="log.patient_photo" :alt="log.patient_name" class="w-9 h-9 rounded-full object-cover border border-slate-200">
+                            <img :src="log.patient_photo" :alt="log.patient_name" class="w-10 h-10 rounded-full object-cover border border-slate-200">
                             <div>
-                                <p class="font-bold text-on-surface text-xs" x-text="log.patient_name"></p>
-                                <p class="text-[11px] text-slate-400" x-text="log.patient_email"></p>
+                                <p class="font-bold text-slate-900 text-sm font-headline" x-text="log.patient_name"></p>
+                                <p class="text-xs text-slate-400" x-text="log.patient_email"></p>
                             </div>
                         </div>
                     </td>
@@ -48,22 +48,22 @@
                     <!-- Protokol -->
                     <td class="py-4 px-6">
                         <div class="flex flex-col items-start gap-1">
-                            <span :class="log.protocol_type === 'sunnah' ? 'bg-amber-100 text-amber-800' : (log.protocol_type === 'intermittent' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800')"
-                                  class="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
+                            <span :class="log.protocol_type === 'sunnah' ? 'bg-amber-100 text-amber-900' : (log.protocol_type === 'intermittent' ? 'bg-blue-100 text-blue-900' : 'bg-purple-100 text-purple-900')"
+                                  class="px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider"
                                   x-text="log.protocol_type"></span>
-                            <span class="font-bold text-on-surface" x-text="log.protocol_name"></span>
+                            <span class="font-bold text-slate-900 text-xs font-headline" x-text="log.protocol_name"></span>
                         </div>
                     </td>
 
                     <!-- Tanggal & Jadwal -->
                     <td class="py-4 px-6">
-                        <p class="font-bold text-on-surface" x-text="log.planned_date_formatted"></p>
+                        <p class="font-bold text-slate-900 text-xs" x-text="log.planned_date_formatted"></p>
                         <p class="text-[11px] text-slate-400" x-text="'Target: ' + log.target_duration_hours + ' Jam'"></p>
                     </td>
 
                     <!-- Durasi Aktual -->
                     <td class="py-4 px-6">
-                        <span class="font-bold text-primary" x-text="log.actual_duration_hours ? log.actual_duration_hours + ' Jam' : '-'"></span>
+                        <span class="font-bold text-blue-600 text-xs" x-text="log.actual_duration_hours ? log.actual_duration_hours + ' Jam' : '-'"></span>
                     </td>
 
                     <!-- Status & Mood -->
@@ -74,12 +74,12 @@
                                 'bg-blue-100 text-blue-800': log.status === 'planned',
                                 'bg-amber-100 text-amber-800': log.status === 'skipped',
                                 'bg-rose-100 text-rose-800': log.status === 'missed'
-                            }" class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                            }" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
                             x-text="log.status"></span>
 
-                            <span x-show="log.mood === 'good'" title="Mood: Good" class="material-symbols-outlined text-emerald-500 text-sm">sentiment_very_satisfied</span>
-                            <span x-show="log.mood === 'neutral'" title="Mood: Neutral" class="material-symbols-outlined text-amber-500 text-sm">sentiment_neutral</span>
-                            <span x-show="log.mood === 'bad'" title="Mood: Bad" class="material-symbols-outlined text-rose-500 text-sm">sentiment_very_dissatisfied</span>
+                            <span x-show="log.mood === 'good'" title="Mood: Good" class="material-symbols-outlined text-emerald-500 text-base">sentiment_very_satisfied</span>
+                            <span x-show="log.mood === 'neutral'" title="Mood: Neutral" class="material-symbols-outlined text-amber-500 text-base">sentiment_neutral</span>
+                            <span x-show="log.mood === 'bad'" title="Mood: Bad" class="material-symbols-outlined text-rose-500 text-base">sentiment_very_dissatisfied</span>
                         </div>
                     </td>
 
@@ -87,7 +87,7 @@
                     <td class="py-4 px-6 text-right">
                         <button type="button"
                                 @click="openDetail(log)"
-                                class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-primary hover:text-white hover:border-primary text-xs font-semibold transition-all">
+                                class="px-4 py-1.5 rounded-xl bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-600 text-xs font-semibold transition-all">
                             Detail
                         </button>
                     </td>

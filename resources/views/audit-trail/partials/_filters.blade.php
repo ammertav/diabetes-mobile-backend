@@ -7,11 +7,11 @@
             <input type="text"
                    x-model="search"
                    @input.debounce.300ms="loadLogs(1)"
-                   placeholder="Cari pasien atau protokol..."
+                   placeholder="Cari pengguna, ID event, atau deskripsi..."
                    class="w-full bg-surface-container-low border-none rounded-xl pl-10 pr-4 py-3 text-sm text-on-surface focus:ring-2 focus:ring-primary/20 transition-all outline-none">
         </div>
         <button type="button"
-                @click="search = ''; status = 'all'; date = ''; loadLogs(1);"
+                @click="search = ''; action = 'all'; loadLogs(1);"
                 class="bg-surface-container-high p-3 rounded-xl text-on-surface-variant hover:bg-surface-variant transition-colors"
                 title="Reset Filters">
             <span class="material-symbols-outlined">restart_alt</span>
@@ -19,21 +19,16 @@
     </div>
 
     <div class="flex items-center gap-3">
-        <!-- Status Dropdown -->
-        <select x-model="status"
+        <!-- Action Dropdown -->
+        <select x-model="action"
                 @change="loadLogs(1)"
                 class="bg-surface-container-low border-none rounded-xl pl-4 pr-10 py-3 text-sm font-medium text-on-surface-variant focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer">
-            <option value="all">Semua Status</option>
-            <option value="completed">Completed</option>
-            <option value="planned">Planned</option>
-            <option value="skipped">Skipped</option>
-            <option value="missed">Missed</option>
+            <option value="all">Semua Aktivitas</option>
+            <option value="protocol_updated">Protocol Update</option>
+            <option value="patient_reviewed">Patient Review</option>
+            <option value="fasting_confirmed">Konfirmasi Puasa</option>
+            <option value="cms_published">Publikasi CMS</option>
+            <option value="fgb_recorded">Catat FGB</option>
         </select>
-
-        <!-- Date Filter -->
-        <input type="date"
-               x-model="date"
-               @change="loadLogs(1)"
-               class="bg-surface-container-low border-none rounded-xl px-4 py-3 text-sm font-medium text-on-surface-variant focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer">
     </div>
 </div>
