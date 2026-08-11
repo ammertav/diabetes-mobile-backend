@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use App\Enums\UserProtocolStatus;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 class UserProtocol extends Model
 {
+    use HasUuids;
+
     protected $guarded = ['id'];
 
     protected $casts = [

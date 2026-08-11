@@ -48,13 +48,12 @@ class AuthMiddleware
             // Inject user ke request (biar bisa dipakai di controller)
             $request->attributes->set('auth_user', $user);
             Auth::setUser($user);
-
-            return $next($request);
         } catch (\Firebase\JWT\ExpiredException $e) {
             return $this->unauthorized('Token expired');
         } catch (\Exception $e) {
-            return $this->unauthorized('Token tidak valid');
+            return $this->unauthorized('Token tidak valid: ' . $e->getMessage());
         }
+        return $next($request);
     }
 
     private function unauthorized($message)
