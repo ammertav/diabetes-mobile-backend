@@ -10,10 +10,11 @@ class GetPatientFgbDetailAction
 {
     public function execute(string $userId): array
     {
-        $user = User::where('id', $userId)->with('mobileProfile')->firstOrFail();
+        $user = User::query()->where('id', $userId)->with('mobileProfile')->firstOrFail();
 
         // Get recent 10 FGB records for chart and list
-        $records = FgbRecord::where('user_id', $userId)
+        $records = FgbRecord::query()
+            ->where('user_id', $userId)
             ->latest('server_timestamp')
             ->limit(10)
             ->get();

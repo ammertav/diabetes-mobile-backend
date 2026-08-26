@@ -36,7 +36,7 @@ class StoreFgbRecordAction
                 'is_fasting_day' => $isFastingDay,
             ]);
 
-            $alertData = $this->checkAndCreateAlerts($user->id, $fgb);
+            $alertData = $this->checkAndCreateAlerts($user, $fgb);
 
             return [
                 'fgb' => $fgb,
@@ -45,9 +45,9 @@ class StoreFgbRecordAction
         });
     }
 
-    private function checkAndCreateAlerts(string $userId, FgbRecord $fgb): array
+    private function checkAndCreateAlerts(User $user, FgbRecord $fgb): array
     {
-        $settings = UserAlertSetting::query()->where('user_id', $userId)->first();
+        $settings = UserAlertSetting::query()->where('user_id', $user->id)->first();
 
         if (!$settings) {
             $settings = new UserAlertSetting([
@@ -88,13 +88,40 @@ class StoreFgbRecordAction
 
         try {
             SafetyAlert::create([
-                'user_id' => $userId,
+                'user_id' => $user->id,
                 'fgb_record_id' => $fgb->id,
                 'type' => $type,
                 'message' => $message,
             ]);
+
+            // Dispatch admin notification
+            $isSevere = str_contains($type, 'severe');
+            $severityText = $isSevere ? 'Darurat Kritis' : 'Peringatan';
+            $notificationType = $isSevere ? 'critical' : 'warning';
+            $patientName = $user->mobileProfile->name ?? $user->email;
+            
+            $title = "{$severityText}: {$patientName}";
+            $notificationMessage = "Gula darah pasien terdeteksi: {$value} mg/dL ({$type}).";
+            $actionUrl = "/safety-alerts";
+
+            $admins = User::query()->where('type', \App\Enums\UserType::ADMIN)->get();
+            foreach ($admins as $admin) {
+                \Illuminate\Notifications\DatabaseNotification::create([
+                    'id' => (string) Str::uuid(),
+                    'type' => \App\Notifications\AdminNotification::class,
+                    'notifiable_type' => User::class,
+                    'notifiable_id' => $admin->id,
+                    'data' => [
+                        'title' => $title,
+                        'message' => $notificationMessage,
+                        'type' => $notificationType,
+                        'action_url' => $actionUrl,
+                    ],
+                    'read_at' => null,
+                ]);
+            }
         } catch (\Throwable $e) {
-            // duplicate / race condition → ignore
+            // duplicate / race condition / notification fail → ignore
         }
 
         return [

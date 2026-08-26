@@ -9,13 +9,14 @@ use App\Models\FastingLog;
 use App\Models\FgbRecord;
 use App\Models\SafetyAlert;
 use App\Services\CsvExportService;
+use App\Actions\Fasting\GetStreakSummaryAction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rules\Enum as EnumRule;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, GetStreakSummaryAction $getStreakSummaryAction)
     {
         $user = $request->user();
         $today = now()->toDateString();
@@ -46,7 +47,13 @@ class DashboardController extends Controller
             'non_fasting_day_avg' => $this->formatAverage((clone $fbgBaseQuery)->where('server_timestamp', '>=', now()->subDays(30))->where('is_fasting_day', false)->avg('value_mg_dl')),
         ];
 
-        $streak = $this->calculateStreak($user->id, $today);
+        $streakData = $getStreakSummaryAction->execute($user->id, $today);
+        $streak = [
+            'current' => $streakData['current_streak'],
+            'best' => $streakData['best_streak'],
+            'total_fasting_days' => $streakData['total_fasting_days'],
+        ];
+
         $adherence = $this->calculateAdherence($user->id, $today);
 
         return response()->json([
@@ -286,42 +293,7 @@ class DashboardController extends Controller
         return $log->status->value;
     }
 
-    private function calculateStreak(string $userId, string $today): array
-    {
-        $logs = FastingLog::whereHas('userProtocol', function ($query) use ($userId) {
-            $query->where('user_id', $userId);
-        })
-            ->whereDate('planned_date', '<=', $today)
-            ->orderBy('planned_date')
-            ->get(['planned_date', 'status']);
 
-        $best = 0;
-        $current = 0;
-        $running = 0;
-
-        foreach ($logs as $log) {
-            if ($log->status === FastingLogStatus::COMPLETED) {
-                $running++;
-                $best = max($best, $running);
-            } else {
-                $running = 0;
-            }
-        }
-
-        foreach ($logs->reverse() as $log) {
-            if ($log->status === FastingLogStatus::COMPLETED) {
-                $current++;
-                continue;
-            }
-            break;
-        }
-
-        return [
-            'current' => $current,
-            'best' => $best,
-            'total_fasting_days' => $logs->where('status', FastingLogStatus::COMPLETED)->count(),
-        ];
-    }
 
     private function calculateAdherence(string $userId, string $today): array
     {

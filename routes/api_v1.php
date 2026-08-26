@@ -1,11 +1,14 @@
 <?php
 
 use App\Http\Controllers\API\V1\AuthController;
+use App\Http\Controllers\API\V1\ContentController;
 use App\Http\Controllers\API\V1\DashboardController;
 use App\Http\Controllers\API\V1\FastingLogController;
 use App\Http\Controllers\API\V1\FastingProtocolController;
 use App\Http\Controllers\API\V1\FgbController;
+use App\Http\Controllers\API\V1\NotificationController;
 use App\Http\Controllers\API\V1\SafetyAlertController;
+use App\Http\Controllers\API\V1\StreakController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -43,4 +46,18 @@ Route::middleware(\App\Http\Middleware\API\V1\AuthMiddleware::class)->group(func
     Route::patch('safety-alerts/{id}/acknowledge', [SafetyAlertController::class, 'acknowledge']);
     Route::get('safety-alerts/settings', [SafetyAlertController::class, 'settings']);
     Route::put('safety-alerts/settings', [SafetyAlertController::class, 'updateSettings']);
+
+    // Content (Edu & Spiritual)
+    Route::get('content', [ContentController::class, 'index']);
+
+    // Streaks
+    Route::get('streaks', [StreakController::class, 'show']);
+
+    // Notifications
+    Route::get('notifications/settings', [NotificationController::class, 'settings']);
+    Route::put('notifications/settings', [NotificationController::class, 'updateSettings']);
+    Route::patch('notifications/fcm-token', [NotificationController::class, 'registerFcmToken']);
+    Route::get('notifications/history', [NotificationController::class, 'history']);
+    Route::patch('notifications/history/{id}/read', [NotificationController::class, 'markAsRead']);
 });
+

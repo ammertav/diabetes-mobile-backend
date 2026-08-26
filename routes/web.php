@@ -8,6 +8,9 @@ use App\Http\Controllers\PatientController;
 use App\Http\Controllers\FgbMonitoringController;
 use App\Http\Controllers\FastingLogWebController;
 use App\Http\Controllers\AuditTrailController;
+use App\Http\Controllers\SafetyAlertWebController;
+use App\Http\Controllers\ReportWebController;
+use App\Http\Controllers\AdminNotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -49,4 +52,18 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/audit-trail', [AuditTrailController::class, 'index'])->name('audit-trail');
     Route::get('/audit-trail/data', [AuditTrailController::class, 'loadLogs'])->name('audit-trail-data');
+
+    // Safety Alerts
+    Route::get('/safety-alerts', [SafetyAlertWebController::class, 'index'])->name('safety-alerts');
+    Route::get('/safety-alerts/data', [SafetyAlertWebController::class, 'loadLogs'])->name('safety-alerts-data');
+    Route::post('/safety-alerts/{id}/notify', [SafetyAlertWebController::class, 'notifyUser'])->name('safety-alerts-notify');
+
+    // Health Reports
+    Route::get('/reports', [ReportWebController::class, 'index'])->name('reports');
+    Route::get('/reports/patient/{userId}', [ReportWebController::class, 'patientReport'])->name('reports-patient');
+
+    // Admin Notifications
+    Route::get('/admin-notifications', [AdminNotificationController::class, 'index'])->name('admin-notifications');
+    Route::post('/admin-notifications/{id}/read', [AdminNotificationController::class, 'markAsRead'])->name('admin-notifications-read');
+    Route::post('/admin-notifications/read-all', [AdminNotificationController::class, 'markAllAsRead'])->name('admin-notifications-read-all');
 });

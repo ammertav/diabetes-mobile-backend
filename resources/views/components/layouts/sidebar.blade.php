@@ -43,6 +43,18 @@
             'route' => 'audit-trail',
             'isActive' => request()->routeIs('audit-trail'),
         ],
+        [
+            'label' => 'Emergency Alerts',
+            'icon' => 'emergency',
+            'route' => 'safety-alerts',
+            'isActive' => request()->routeIs('safety-alerts'),
+        ],
+        [
+            'label' => 'Health Reports',
+            'icon' => 'analytics',
+            'route' => 'reports',
+            'isActive' => request()->routeIs('reports') || request()->routeIs('reports-patient'),
+        ],
     ];
 @endphp
 

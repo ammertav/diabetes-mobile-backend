@@ -16,9 +16,12 @@ use Laravel\Sanctum\HasApiTokens;
 
 #[Guarded(['id'])]
 #[Hidden(['password', 'remember_token'])]
+/**
+ * @mixin \Illuminate\Database\Eloquent\Builder
+ */
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
+    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasApiTokens, HasUuids;
 
     protected $guarded = ['id'];
@@ -37,6 +40,11 @@ class User extends Authenticatable
             'password' => 'hashed',
             'type' => UserType::class,
         ];
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->type->isAdmin();
     }
 
     public function authProviders()
@@ -125,7 +133,7 @@ class User extends Authenticatable
         return 'Low';
     }
 
-    public function scopeSearch($query, ?string $search)
+    public function scopeSearch(\Illuminate\Database\Eloquent\Builder $query, ?string $search)
     {
         if (empty($search)) {
             return $query;
@@ -143,7 +151,7 @@ class User extends Authenticatable
         });
     }
 
-    public function scopeFilterByRisk($query, ?string $risk)
+    public function scopeFilterByRisk(\Illuminate\Database\Eloquent\Builder $query, ?string $risk)
     {
         if (empty($risk) || $risk === 'all') {
             return $query;
@@ -176,7 +184,7 @@ class User extends Authenticatable
         return $query;
     }
 
-    public function scopeFilterByProtocol($query, ?string $protocolId)
+    public function scopeFilterByProtocol(\Illuminate\Database\Eloquent\Builder $query, ?string $protocolId)
     {
         if (empty($protocolId) || $protocolId === 'all') {
             return $query;
@@ -187,7 +195,7 @@ class User extends Authenticatable
         });
     }
 
-    public function scopeFilterByCheckinDate($query, ?string $date)
+    public function scopeFilterByCheckinDate(\Illuminate\Database\Eloquent\Builder $query, ?string $date)
     {
         if (empty($date)) {
             return $query;
@@ -197,4 +205,15 @@ class User extends Authenticatable
             $q->whereDate('server_timestamp', $date);
         });
     }
+
+    public function notificationSetting()
+    {
+        return $this->hasOne(UserNotificationSetting::class);
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(UserNotification::class);
+    }
 }
+
