@@ -125,15 +125,15 @@ class FastingLogController extends Controller
                 $log->update([
                     'status' => FastingLogStatus::COMPLETED,
                     'started_at' => $now,
-                    'mood' => $validated['mood'],
-                    'notes' => $validated['notes'],
+                    'mood' => $validated['mood'] ?? null,
+                    'notes' => $validated['notes'] ?? null,
                     'confirmed_at' => $now,
                 ]);
             } else {
                 $log->update([
                     'status' => FastingLogStatus::SKIPPED,
-                    'skip_reason' => $validated['skip_reason'],
-                    'notes' => $validated['notes'],
+                    'skip_reason' => $validated['skip_reason'] ?? null,
+                    'notes' => $validated['notes'] ?? null,
                     'confirmed_at' => $now,
                 ]);
             }
