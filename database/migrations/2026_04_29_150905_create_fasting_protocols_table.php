@@ -15,6 +15,8 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('type');
+            $table->string('start_time')->default('18:00');
+            $table->string('end_time')->default('10:00');
             $table->unsignedInteger('duration_hours')->nullable();
             $table->text('description')->nullable();
             $table->timestamps();

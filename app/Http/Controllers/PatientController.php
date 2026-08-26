@@ -2,51 +2,34 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\UserType;
-use App\Models\User;
+use App\Http\Requests\PatientListRequest;
+use App\DTO\PatientFilterData;
+use App\Actions\Patient\ListPatientsAction;
+use App\Http\Resources\PatientResource;
+use App\Models\FastingProtocol;
 use Illuminate\Http\Request;
 
 class PatientController extends Controller
 {
     public function index(Request $request)
     {
-        return view('patients-management.index');
+        $protocols = FastingProtocol::all();
+        return view('patients-management.index', compact('protocols'));
     }
 
-    public function loadPatients(Request $request)
+    public function loadPatients(PatientListRequest $request, ListPatientsAction $action)
     {
-        $patients = User::query()
-            ->where('type', UserType::MOBILE->value)
-            ->with([
-                'activeProtocol',
-            ])
-            ->latest()
-            ->paginate(10);
+        $validated = $request->validated();
+        $page = (int) $request->input('page', 1);
 
-        $protocolPatients = $patients->getCollection()
-            ->filter(fn($patient) => $patient->activeProtocol)
-            ->count();
+        $dto = PatientFilterData::fromRequest($validated, $page);
+        
+        $result = $action->execute($dto);
+        $patients = $result['patients'];
 
         return response()->json([
-            "stats" => [
-                "total_patients" => $patients->count(),
-                "protocol_patients" => $protocolPatients,
-                "high_risk_patients" => 0,
-            ],
-            'patients' => $patients->through(fn($patient) => [
-                'id' => $patient->id,
-                'name' => $patient->name,
-                'email' => $patient->email,
-                'photo' => $patient->photo_url,
-                'patient_code' => $patient->patient_code,
-                'diabetes_type' => $patient->mobileProfile->diabetes_status,
-                'protocol' => $patient->activeProtocol?->name,
-                'risk_status' => $patient->risk_status,
-                'last_checkin' => optional(
-                    $patient->latestCheckin?->created_at
-                )->diffForHumans(),
-            ]),
-
+            'stats' => $result['stats'],
+            'patients' => PatientResource::collection($patients)->response()->getData(true),
             'pagination' => [
                 'current_page' => $patients->currentPage(),
                 'last_page' => $patients->lastPage(),

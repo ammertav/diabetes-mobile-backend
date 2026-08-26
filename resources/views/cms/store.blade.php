@@ -1,167 +1,131 @@
 @extends('layouts.app')
 
 @section('content')
-    <!-- Content Canvas -->
-    <div class="px-10">
-        <!-- Form Area -->
-        <div class="w-full">
-            <div class="mb-10 flex items-center gap-4">
-                <button
-                    class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:bg-primary/10 hover:text-primary transition-all">
-                    <a href="{{ route('cms-create') }}">
-                        <span class="material-symbols-outlined">arrow_back</span>
-                    </a>
-                </button>
-                <div>
-                    <h2
-                        class="font-headline text-3xl font-extrabold text-on-surface tracking-tight">
-                        Buat Konten Baru</h2>
-                    <p class="font-body text-on-surface-variant mt-1">Kelola
-                        edukasi dan motivasi harian untuk pasien diabetes.</p>
-                </div>
+    <div class="max-w-4xl mx-auto">
+        <!-- Header area -->
+        <div class="mb-6 flex items-center gap-4">
+            <a href="{{ route('cms') }}"
+               class="w-10 h-10 rounded-xl bg-surface-container-lowest border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-600 hover:bg-primary hover:text-white transition-all shadow-sm">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </a>
+            <div>
+                <h2 class="font-headline text-2xl font-extrabold text-on-surface tracking-tight">
+                    {{ $content ? 'Edit Konten' : 'Buat Konten Baru' }}
+                </h2>
+                <p class="font-body text-xs text-slate-500 mt-0.5">Kelola edukasi dan motivasi harian untuk pasien diabetes.</p>
             </div>
+        </div>
+
+        <!-- Form Card Container -->
+        <div class="bg-surface-container-lowest p-8 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
             <form
                 method="POST"
-                action="{{ route('cms-store') }}"
-                class="space-y-8">
+                action="{{ $content ? route('cms-update', $content->id) : route('cms-store') }}"
+                class="space-y-6">
+                @csrf
+                @if($content)
+                    @method('PUT')
+                @endif
+
                 <!-- Title Input -->
-                <div class="group">
-                    <label
-                        class="block font-headline text-sm font-bold text-on-surface-variant mb-2 tracking-wide uppercase text-[10px]">Judul
-                        Konten</label>
+                <div>
+                    <label class="block font-headline text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Judul Konten</label>
                     <input
-                        class="w-full bg-surface-container-highest border-none rounded-xl px-5 py-4 text-on-surface font-body focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/40 transition-all outline-none"
+                        class="w-full bg-surface-container-low border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-on-surface font-body focus:bg-white focus:ring-2 focus:ring-primary/30 outline-none transition-all"
                         name="title" id="input_judul"
+                        value="{{ old('title', $content->title ?? '') }}"
                         placeholder="Masukkan judul menarik di sini..."
                         type="text" />
+                    @error('title')
+                        <span class="text-xs text-red-500 font-medium mt-1 block">{{ $message }}</span>
+                    @enderror
                 </div>
-                <div class="grid grid-cols-1 gap-6">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Content Type Dropdown -->
                     <div>
-                        <label
-                            class="block font-headline text-sm font-bold text-on-surface-variant mb-2 tracking-wide uppercase text-[10px]">Tipe
-                            Konten</label>
-                        <div class="relative">
-                            <select
-                                class="w-full appearance-none bg-surface-container-highest border-none rounded-xl px-5 py-4 text-on-surface font-body focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/40 transition-all outline-none"
-                                name="type" id="input_tipe">
-                                @foreach (\App\Enums\CmsContentType::cases() as $type)
-                                    <option value="{{ $type->value }}">
-                                        {{ $type->label() }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                        <label class="block font-headline text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Tipe Konten</label>
+                        <select
+                            class="w-full bg-surface-container-low border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-on-surface font-body focus:bg-white focus:ring-2 focus:ring-primary/30 outline-none transition-all cursor-pointer"
+                            name="type" id="input_tipe">
+                            @foreach (\App\Enums\CmsContentType::cases() as $type)
+                                <option value="{{ $type->value }}" {{ old('type', $content->content_type->value ?? '') == $type->value ? 'selected' : '' }}>
+                                    {{ $type->label() }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
+
                     <!-- Day Context Dropdown -->
                     <div>
-                        <label
-                            class="block font-headline text-sm font-bold text-on-surface-variant mb-2 tracking-wide uppercase text-[10px]">Konteks
-                            Hari</label>
-                        <div class="relative">
-                            <select
-                                name="day_context"
-                                class="w-full appearance-none bg-surface-container-highest border-none rounded-xl px-5 py-4 text-on-surface font-body focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/40 transition-all outline-none">
-                                @foreach (\App\Enums\CmsDayContext::cases() as $type)
-                                    <option value="{{ $type->value }}">
-                                        {{ $type->label() }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                        <label class="block font-headline text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Konteks Hari</label>
+                        <select
+                            name="day_context"
+                            class="w-full bg-surface-container-low border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-on-surface font-body focus:bg-white focus:ring-2 focus:ring-primary/30 outline-none transition-all cursor-pointer">
+                            <option value="">Tanpa Konteks Hari</option>
+                            @foreach (\App\Enums\CmsDayContext::cases() as $context)
+                                <option value="{{ $context->value }}" {{ old('day_context', $content->day_context->value ?? '') == $context->value ? 'selected' : '' }}>
+                                    {{ $context->label() }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
+
                 <!-- Content Body Area -->
                 <div>
-                    <label
-                        class="block font-headline text-sm font-bold text-on-surface-variant mb-2 tracking-wide uppercase text-[10px]">Isi
-                        Konten</label>
+                    <label class="block font-headline text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Isi Konten</label>
                     <textarea
-                        class="w-full bg-surface-container-highest border-none rounded-xl px-5 py-4 text-on-surface font-body focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/40 transition-all outline-none resize-none"
+                        class="w-full bg-surface-container-low border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-on-surface font-body focus:bg-white focus:ring-2 focus:ring-primary/30 outline-none resize-none transition-all"
                         name="body" id="input_isi"
-                        placeholder="Tuliskan pesan motivasi atau edukasi Anda..." rows="6"></textarea>
+                        placeholder="Tuliskan pesan motivasi atau edukasi Anda..." rows="6">{{ old('body', $content->body ?? '') }}</textarea>
+                    @error('body')
+                        <span class="text-xs text-red-500 font-medium mt-1 block">{{ $message }}</span>
+                    @enderror
                 </div>
+
                 <!-- Publishing Status -->
-                <div class="flex items-center gap-12">
-                    <div>
-                        <label
-                            class="block font-headline text-sm font-bold text-on-surface-variant mb-3 tracking-wide uppercase text-[10px]">Status
-                            Publikasi</label>
-                        <div class="flex items-center gap-6">
+                <div>
+                    <label class="block font-headline text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Status Publikasi</label>
+                    <div class="flex items-center gap-6 bg-surface-container-low p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <!-- Draft -->
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <input
+                                type="radio"
+                                name="is_published"
+                                value="0"
+                                {{ old('is_published', isset($content) ? ($content->is_published ? '1' : '0') : '0') == '0' ? 'checked' : '' }}
+                                class="text-primary focus:ring-primary/30" />
+                            <span class="text-xs font-semibold text-slate-700 group-hover:text-primary transition-colors">
+                                Draft
+                            </span>
+                        </label>
 
-                            <!-- Draft -->
-                            <label
-                                class="flex items-center gap-3 cursor-pointer group">
-                                <div
-                                    class="relative flex items-center justify-center">
-
-                                    <input
-                                        type="radio"
-                                        name="is_published"
-                                        value="0"
-                                        checked
-                                        class="peer sr-only" />
-
-                                    <!-- Outer -->
-                                    <div
-                                        class="w-5 h-5 rounded-full border-2 border-outline-variant peer-checked:border-primary transition-colors duration-200">
-                                    </div>
-
-                                    <!-- Inner -->
-                                    <div
-                                        class="absolute w-2.5 h-2.5 rounded-full bg-primary scale-0 peer-checked:scale-100 transition-transform duration-200">
-                                    </div>
-                                </div>
-
-                                <span
-                                    class="text-sm font-medium text-on-surface group-hover:text-primary transition-colors">
-                                    Draft
-                                </span>
-                            </label>
-
-                            <!-- Published -->
-                            <label
-                                class="flex items-center gap-3 cursor-pointer group">
-                                <div
-                                    class="relative flex items-center justify-center">
-
-                                    <input
-                                        type="radio"
-                                        name="is_published"
-                                        value="1"
-                                        class="peer sr-only" />
-
-                                    <!-- Outer -->
-                                    <div
-                                        class="w-5 h-5 rounded-full border-2 border-outline-variant peer-checked:border-primary transition-colors duration-200">
-                                    </div>
-
-                                    <!-- Inner -->
-                                    <div
-                                        class="absolute w-2.5 h-2.5 rounded-full bg-primary scale-0 peer-checked:scale-100 transition-transform duration-200">
-                                    </div>
-                                </div>
-
-                                <span
-                                    class="text-sm font-medium text-on-surface group-hover:text-primary transition-colors">
-                                    Published
-                                </span>
-                            </label>
-
-                        </div>
+                        <!-- Published -->
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <input
+                                type="radio"
+                                name="is_published"
+                                value="1"
+                                {{ old('is_published', isset($content) ? ($content->is_published ? '1' : '0') : '0') == '1' ? 'checked' : '' }}
+                                class="text-primary focus:ring-primary/30" />
+                            <span class="text-xs font-semibold text-slate-700 group-hover:text-primary transition-colors">
+                                Published
+                            </span>
+                        </label>
                     </div>
                 </div>
+
                 <!-- Actions -->
-                <div class="pt-6 flex items-center gap-4">
-                    <button
-                        class="px-8 py-3.5 bg-surface-container-high text-on-surface font-headline font-bold rounded-xl hover:bg-surface-container-highest transition-all"
-                        type="button">
+                <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-800">
+                    <a href="{{ route('cms') }}"
+                        class="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all block">
                         Batal
-                    </button>
+                    </a>
                     <button
-                        class="px-10 py-3.5 bg-primary text-white font-headline font-extrabold rounded-xl shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5 transition-all active:scale-95"
+                        class="px-8 py-2.5 bg-primary hover:bg-primary/90 text-white font-headline font-bold text-xs rounded-xl shadow-md transition-all active:scale-95"
                         type="submit">
-                        Publikasikan Sekarang
+                        {{ $content ? 'Simpan Perubahan' : 'Simpan' }}
                     </button>
                 </div>
             </form>

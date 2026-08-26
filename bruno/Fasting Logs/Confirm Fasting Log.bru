@@ -1,0 +1,28 @@
+meta {
+  name: Confirm Fasting Log
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/fasting-logs/confirm
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "planned_date": "2026-08-26",
+    "is_completed": true,
+    "mood": "good",
+    "notes": "Puasa berjalan lancar"
+  }
+}

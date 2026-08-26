@@ -1,0 +1,19 @@
+meta {
+  name: Get Protocols
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/protocols
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~type: sunnah
+}
+
+auth:bearer {
+  token: {{token}}
+}

@@ -30,7 +30,7 @@ class AuthController extends Controller
 
         $user = User::query()->where('email', $validated['email'])->first();
 
-        if (!$user || $user->type !== UserType::ADMIN) {
+        if (!$user || !$user->type === UserType::ADMIN) {
             return back()->withErrors([
                 'email' => 'Registered account is not admin',
             ]);

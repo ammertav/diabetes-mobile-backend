@@ -1,0 +1,28 @@
+meta {
+  name: Update Alert Settings
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/safety-alerts/settings
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "hypo_severe": 70,
+    "hypo_mild": 80,
+    "hyper_mild": 180,
+    "hyper_severe": 250
+  }
+}

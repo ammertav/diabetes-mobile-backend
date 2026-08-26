@@ -18,6 +18,8 @@ class FastingProtocolResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'type' => $this->type->value,
+            'start_time' => $this->start_time ?? '18:00',
+            'end_time' => $this->end_time ?? '10:00',
             'fasting_days' => $this->days->pluck('day')->values(),
             'duration_hours' => $this->duration_hours,
             'description' => $this->description,

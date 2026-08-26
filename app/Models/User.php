@@ -16,9 +16,12 @@ use Laravel\Sanctum\HasApiTokens;
 
 #[Guarded(['id'])]
 #[Hidden(['password', 'remember_token'])]
+/**
+ * @mixin \Illuminate\Database\Eloquent\Builder
+ */
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
+    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasApiTokens, HasUuids;
 
     protected $guarded = ['id'];
@@ -37,6 +40,11 @@ class User extends Authenticatable
             'password' => 'hashed',
             'type' => UserType::class,
         ];
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->type->isAdmin();
     }
 
     public function authProviders()
@@ -96,4 +104,116 @@ class User extends Authenticatable
     {
         return $this->hasMany(FcmDevice::class);
     }
+
+    public function latestCheckin()
+    {
+        return $this->hasOne(FgbRecord::class)->latestOfMany('server_timestamp');
+    }
+
+    public function getRiskStatusAttribute(): string
+    {
+        $alerts = $this->safetyAlerts;
+
+        $hasSevere = $alerts->whereNull('acknowledged_at')
+            ->whereIn('type', ['hypo_severe', 'hyper_severe'])
+            ->isNotEmpty();
+
+        if ($hasSevere) {
+            return 'High';
+        }
+
+        $hasMild = $alerts->whereNull('acknowledged_at')
+            ->whereIn('type', ['hypo_mild', 'hyper_mild'])
+            ->isNotEmpty();
+
+        if ($hasMild) {
+            return 'Medium';
+        }
+
+        return 'Low';
+    }
+
+    public function scopeSearch(\Illuminate\Database\Eloquent\Builder $query, ?string $search)
+    {
+        if (empty($search)) {
+            return $query;
+        }
+
+        $searchWildcard = '%' . $search . '%';
+        return $query->where(function ($q) use ($searchWildcard) {
+            $q->where('email', 'like', $searchWildcard)
+              ->orWhereHas('mobileProfile', function ($qp) use ($searchWildcard) {
+                  $qp->where('name', 'like', $searchWildcard);
+              })
+              ->orWhereHas('activeProtocol.protocol', function ($qp) use ($searchWildcard) {
+                  $qp->where('name', 'like', $searchWildcard);
+              });
+        });
+    }
+
+    public function scopeFilterByRisk(\Illuminate\Database\Eloquent\Builder $query, ?string $risk)
+    {
+        if (empty($risk) || $risk === 'all') {
+            return $query;
+        }
+
+        $risk = strtolower($risk);
+        if ($risk === 'high') {
+            return $query->whereHas('safetyAlerts', function ($q) {
+                $q->whereNull('acknowledged_at')
+                  ->whereIn('type', ['hypo_severe', 'hyper_severe']);
+            });
+        }
+
+        if ($risk === 'medium') {
+            return $query->whereHas('safetyAlerts', function ($q) {
+                $q->whereNull('acknowledged_at')
+                  ->whereIn('type', ['hypo_mild', 'hyper_mild']);
+            })->whereDoesntHave('safetyAlerts', function ($q) {
+                $q->whereNull('acknowledged_at')
+                  ->whereIn('type', ['hypo_severe', 'hyper_severe']);
+            });
+        }
+
+        if ($risk === 'low') {
+            return $query->whereDoesntHave('safetyAlerts', function ($q) {
+                $q->whereNull('acknowledged_at');
+            });
+        }
+
+        return $query;
+    }
+
+    public function scopeFilterByProtocol(\Illuminate\Database\Eloquent\Builder $query, ?string $protocolId)
+    {
+        if (empty($protocolId) || $protocolId === 'all') {
+            return $query;
+        }
+
+        return $query->whereHas('activeProtocol', function ($q) use ($protocolId) {
+            $q->where('fasting_protocol_id', $protocolId);
+        });
+    }
+
+    public function scopeFilterByCheckinDate(\Illuminate\Database\Eloquent\Builder $query, ?string $date)
+    {
+        if (empty($date)) {
+            return $query;
+        }
+
+        return $query->whereHas('latestCheckin', function ($q) use ($date) {
+            $q->whereDate('server_timestamp', $date);
+        });
+    }
+
+    public function notificationSetting()
+    {
+        return $this->hasOne(UserNotificationSetting::class);
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(UserNotification::class);
+    }
 }
+

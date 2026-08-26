@@ -1,0 +1,15 @@
+meta {
+  name: Get Streaks
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/streaks
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

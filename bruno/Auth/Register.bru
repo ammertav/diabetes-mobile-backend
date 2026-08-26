@@ -1,0 +1,34 @@
+meta {
+  name: Register User
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/auth/register
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "baru@app.com",
+    "password": "User1234",
+    "name": "Pengguna Baru",
+    "age": 30,
+    "gender": "male",
+    "diabetes_status": "prediabetes",
+    "bmi": 23.5,
+    "disclaimer_accepted": true
+  }
+}
+
+script:post-response {
+  if (res.status === 201 && res.body.data && res.body.data.token) {
+    bru.setEnvVar("token", res.body.data.token);
+  }
+}

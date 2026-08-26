@@ -4,13 +4,15 @@ namespace App\Http\Controllers\API\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateAlertSettingRequest;
+use App\Actions\Safety\AcknowledgeSafetyAlertAction;
+use App\Actions\Safety\UpdateAlertSettingsAction;
 use Illuminate\Http\Request;
 
 class SafetyAlertController extends Controller
 {
     public function index(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'alert_type' => 'string|nullable|in:' . implode(',', array_column(\App\Enums\AlertType::cases(), 'value')),
             'acknowledged' => 'boolean|nullable',
             'limit' => 'integer|nullable|default:20',
@@ -28,37 +30,29 @@ class SafetyAlertController extends Controller
         return response()->json(['data' => $alerts]);
     }
 
-    public function acknowledge(Request $request, string $id)
+    public function acknowledge(Request $request, string $id, AcknowledgeSafetyAlertAction $action)
     {
         $validated = $request->validate([
             'action_taken' => 'nullable|string',
         ]);
 
-        $user = $request->user();
+        try {
+            $alert = $action->execute($request->user(), $id, $validated['action_taken'] ?? null);
 
-        $alert = $user->safetyAlert($id);
-
-        if ($alert->acknowledge_at !== null) {
             return response()->json([
-                'message' => 'Alert already acknowledged',
-            ], 422);
+                'message' => 'Alert acknowledged successfully',
+                'data' => $alert,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], $e->getCode() ?: 400);
         }
-
-        $alert->update([
-            'acknowledged_at' => now(),
-            'action_taken' => $validated['action_taken'] ?? null,
-        ]);
-
-        return response()->json([
-            'message' => 'Alert acknowledged successfully',
-            'data' => $alert->fresh(),
-        ]);
     }
 
     public function settings(Request $request)
     {
         $user = $request->user();
-
         $setting = $user->alertSetting;
 
         if (!$setting) {
@@ -82,15 +76,9 @@ class SafetyAlertController extends Controller
         ]);
     }
 
-    public function updateSettings(UpdateAlertSettingRequest $request)
+    public function updateSettings(UpdateAlertSettingRequest $request, UpdateAlertSettingsAction $action)
     {
-        $user = $request->user();
-
-        // Update atau create setting
-        $updated = $user->alertSetting()->updateOrCreate(
-            ['user_id' => $user->id],
-            $request->validated()
-        );
+        $updated = $action->execute($request->user(), $request->validated());
 
         return response()->json([
             'message' => 'Settings updated successfully',

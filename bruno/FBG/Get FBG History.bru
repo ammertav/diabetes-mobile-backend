@@ -1,0 +1,20 @@
+meta {
+  name: Get FBG History
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/fbg
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~context_tag: end_of_fast
+  ~limit: 20
+}
+
+auth:bearer {
+  token: {{token}}
+}

@@ -17,6 +17,11 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
             FastingProtocolSeeder::class,
+            FakePatientsSeeder::class,
+            FgbRecordSeeder::class,
+            CmsContentSeeder::class,
+            FastingLogSeeder::class,
+            AuditTrailSeeder::class,
         ]);
     }
 }

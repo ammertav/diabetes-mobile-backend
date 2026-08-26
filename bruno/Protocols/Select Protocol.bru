@@ -1,0 +1,26 @@
+meta {
+  name: Select Protocol
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/protocols/select
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "protocol_id": "1",
+    "start_date": "2026-08-26"
+  }
+}
