@@ -1,0 +1,21 @@
+meta {
+  name: Export CSV
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/dashboard/export
+  body: none
+  auth: bearer
+}
+
+params:query {
+  start_date: 2026-08-01
+  end_date: 2026-08-26
+  ~include: fbg,fasting_logs,alerts
+}
+
+auth:bearer {
+  token: {{token}}
+}

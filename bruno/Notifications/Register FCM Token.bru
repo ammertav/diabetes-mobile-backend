@@ -1,0 +1,25 @@
+meta {
+  name: Register FCM Token
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/notifications/fcm-token
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "fcm_token": "sample-fcm-device-token-xyz-123"
+  }
+}

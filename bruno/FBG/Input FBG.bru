@@ -1,0 +1,27 @@
+meta {
+  name: Input FBG
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/fbg
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "value_mg_dl": 185.0,
+    "context_tag": "end_of_fast",
+    "client_timestamp": "2026-08-26T09:00:00Z"
+  }
+}

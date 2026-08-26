@@ -1,0 +1,15 @@
+meta {
+  name: Get Alert Settings
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/safety-alerts/settings
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

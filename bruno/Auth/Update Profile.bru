@@ -1,0 +1,28 @@
+meta {
+  name: Update Profile
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/users/profile
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Mobile User Updated",
+    "age": 30,
+    "bmi": 24.5,
+    "diabetes_status": "prediabetes"
+  }
+}

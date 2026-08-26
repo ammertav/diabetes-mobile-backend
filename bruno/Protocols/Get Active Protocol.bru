@@ -1,0 +1,15 @@
+meta {
+  name: Get Active Protocol
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/protocols/active
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
