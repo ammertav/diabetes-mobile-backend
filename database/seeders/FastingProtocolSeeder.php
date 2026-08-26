@@ -12,25 +12,31 @@ class FastingProtocolSeeder extends Seeder
     {
         DB::transaction(function () {
             $createProtocol = function ($data, $days = []) {
-                $protocolId = Str::uuid();
+                $existing = DB::table('fasting_protocols')->where('name', $data['name'])->first();
 
-                DB::table('fasting_protocols')->insert([
-                    'id' => $protocolId,
-                    'name' => $data['name'],
-                    'type' => $data['type'],
-                    'start_time' => $data['start_time'] ?? '18:00',
-                    'end_time' => $data['end_time'] ?? '10:00',
-                    'duration_hours' => $data['duration_hours'] ?? null,
-                    'description' => $data['description'] ?? null,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
+                if ($existing) {
+                    $protocolId = $existing->id;
+                } else {
+                    $protocolId = Str::uuid();
 
-                foreach ($days as $day) {
-                    DB::table('fasting_protocol_days')->insert([
-                        'fasting_protocol_id' => $protocolId,
-                        'day' => $day,
+                    DB::table('fasting_protocols')->insert([
+                        'id' => $protocolId,
+                        'name' => $data['name'],
+                        'type' => $data['type'],
+                        'start_time' => $data['start_time'] ?? '18:00',
+                        'end_time' => $data['end_time'] ?? '10:00',
+                        'duration_hours' => $data['duration_hours'] ?? null,
+                        'description' => $data['description'] ?? null,
+                        'created_at' => now(),
+                        'updated_at' => now(),
                     ]);
+
+                    foreach ($days as $day) {
+                        DB::table('fasting_protocol_days')->insert([
+                            'fasting_protocol_id' => $protocolId,
+                            'day' => $day,
+                        ]);
+                    }
                 }
             };
 

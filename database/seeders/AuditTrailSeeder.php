@@ -92,6 +92,10 @@ class AuditTrailSeeder extends Seeder
             ];
         }
 
+        if (AuditTrail::count() >= 50) {
+            return;
+        }
+
         AuditTrail::insert($records);
     }
 }

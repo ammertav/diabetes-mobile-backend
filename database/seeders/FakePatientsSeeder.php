@@ -30,21 +30,24 @@ class FakePatientsSeeder extends Seeder
         // We will seed 50 fake patients
         for ($i = 1; $i <= 50; $i++) {
             $email = "patient{$i}@example.com";
-            
+
             // 1. Create User
-            $user = User::create([
-                'id' => Str::uuid(),
-                'email' => $email,
-                'type' => UserType::MOBILE,
-            ]);
+            $user = User::firstOrCreate(
+                ['email' => $email],
+                [
+                    'id' => (string) Str::uuid(),
+                    'type' => UserType::MOBILE,
+                ]
+            );
 
             // 2. Create Auth Provider
-            UserAuthProvider::create([
-                'user_id' => $user->id,
-                'provider' => AuthProvider::EMAIL,
-                'provider_id' => $email,
-                'password_hash' => $passwordHash,
-            ]);
+            UserAuthProvider::updateOrCreate(
+                ['user_id' => $user->id, 'provider' => AuthProvider::EMAIL],
+                [
+                    'provider_id' => $email,
+                    'password_hash' => $passwordHash,
+                ]
+            );
 
             // 3. Create Mobile Profile
             $gender = $faker->randomElement([Gender::MALE, Gender::FEMALE]);
@@ -52,19 +55,21 @@ class FakePatientsSeeder extends Seeder
             $lastName = $faker->lastName;
             $name = "{$firstName} {$lastName}";
 
-            MobileProfile::create([
-                'user_id' => $user->id,
-                'name' => $name,
-                'age' => $faker->numberBetween(18, 75),
-                'gender' => $gender,
-                'diabetes_status' => $faker->randomElement([
-                    DiabetesStatus::HEALTHY,
-                    DiabetesStatus::PREDIABETES,
-                    DiabetesStatus::T2DM
-                ]),
-                'bmi' => $faker->randomFloat(1, 18.5, 34.9),
-                'disclaimer_accepted' => true,
-            ]);
+            MobileProfile::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'name' => $name,
+                    'age' => $faker->numberBetween(18, 75),
+                    'gender' => $gender,
+                    'diabetes_status' => $faker->randomElement([
+                        DiabetesStatus::HEALTHY,
+                        DiabetesStatus::PREDIABETES,
+                        DiabetesStatus::T2DM
+                    ]),
+                    'bmi' => $faker->randomFloat(1, 18.5, 34.9),
+                    'disclaimer_accepted' => true,
+                ]
+            );
 
             // 4. Assign Fasting Protocol (approx 70% of patients have active protocol)
             if ($faker->boolean(70) && $protocols->isNotEmpty()) {
