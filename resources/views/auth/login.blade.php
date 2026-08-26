@@ -176,7 +176,6 @@
                 <form action="{{ route('login') }}" class="space-y-6"
                     method="POST">
                     @csrf
-                    @csrf
                     <!-- Email Field -->
                     <div class="space-y-2">
                         <label
@@ -192,8 +191,8 @@
                                 class="block w-full pl-11 pr-4 py-3.5 bg-surface-container-highest rounded-lg font-body text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all duration-300 {{ $errors->has('email') ? 'border border-error focus:ring-error/40' : 'border-none' }}"
                                 id="email" name="email"
                                 placeholder="name@clinicalsanctuary.com"
-                                required="" type="email"
-                                value="{{ old('email', config('app.debug') ? config('app.test_username') : '') }}" />
+                                value="{{ old('email') }}"
+                                required="" type="email" />
                         </div>
                         @error('email')
                             <p
@@ -201,10 +200,6 @@
                                 <span class="material-symbols-outlined text-sm"
                                     style="font-variation-settings: 'FILL' 1;">warning</span>
                                 {{ $message }}
-                            </p>
-                        @enderror
-                        @error('email')
-                            <p class="text-red-500 text-sm ml-1">{{ $message }}
                             </p>
                         @enderror
                     </div>
@@ -226,9 +221,15 @@
                             <input
                                 class="block w-full pl-11 pr-4 py-3.5 bg-surface-container-highest rounded-lg font-body text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all duration-300 {{ $errors->has('password') ? 'border border-error focus:ring-error/40' : 'border-none' }}"
                                 id="password" name="password"
+<<<<<<< Updated upstream
                                 placeholder="••••••••••••" required=""
                                 type="password"
                                 value="{{ config('app.debug') ? config('app.test_password') : '' }}" />
+=======
+                                placeholder="••••••••••••"
+                                required=""
+                                type="password" />
+>>>>>>> Stashed changes
                         </div>
                         @error('password')
                             <p
