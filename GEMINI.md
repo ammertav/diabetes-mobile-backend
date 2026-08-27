@@ -24,6 +24,10 @@ Aturan rinci dipisahkan ke dalam direktori `.agents/rules/` untuk kemudahan peme
    - Praktik terbaik penulisan rules yang efektif
    - Template siap pakai untuk Global Rules (`~/.gemini/config/rules/`) dan Project Rules
 
+4. ⚡ **[Rust Token Killer (RTK) & Token Efficiency](file:///Users/phosphophyllite/Documents/Development/Laravel/laravel-diabetes-app/.agents/rules/rtk-token-killer.md)**
+   - Aturan kompresi output CLI/Tool dan pengelolaan token efisien
+   - Pembatasan pemanggilan view_file dan penggunaan multi-replace
+
 ---
 
 ## ⚡ Ringkasan Aturan Utama (Quick Rules Checklist)

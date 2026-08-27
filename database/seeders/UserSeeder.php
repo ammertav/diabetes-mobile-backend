@@ -107,7 +107,7 @@ class UserSeeder extends Seeder
         );
 
         // Assign default active protocol if available
-        $protocol = FastingProtocol::where('name', 'Puasa Senin-Kamis')->first() ?? FastingProtocol::first();
+        $protocol = FastingProtocol::query()->where('name', 'Puasa Senin-Kamis')->first() ?? FastingProtocol::query()->first();
         if ($protocol) {
             UserProtocol::firstOrCreate(
                 ['user_id' => $user1->id, 'status' => UserProtocolStatus::ACTIVE],
