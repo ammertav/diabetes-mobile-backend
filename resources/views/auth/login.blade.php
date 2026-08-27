@@ -221,15 +221,9 @@
                             <input
                                 class="block w-full pl-11 pr-4 py-3.5 bg-surface-container-highest rounded-lg font-body text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all duration-300 {{ $errors->has('password') ? 'border border-error focus:ring-error/40' : 'border-none' }}"
                                 id="password" name="password"
-<<<<<<< Updated upstream
-                                placeholder="••••••••••••" required=""
-                                type="password"
-                                value="{{ config('app.debug') ? config('app.test_password') : '' }}" />
-=======
                                 placeholder="••••••••••••"
                                 required=""
                                 type="password" />
->>>>>>> Stashed changes
                         </div>
                         @error('password')
                             <p
@@ -263,7 +257,7 @@
                         institutional access?</p>
                     <button
                         class="font-label text-sm font-semibold text-primary px-6 py-2 rounded-full bg-surface-container-high hover:bg-surface-container-highest transition-colors">
-                        <a href="{{ 'register' }}">Register new
+                        <a href="{{ route('register-page') }}">Register new
                             account</a>
                     </button>
                 </div>
