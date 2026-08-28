@@ -30,7 +30,7 @@ class AuthController extends Controller
 
         $user = User::query()->where('email', $validated['email'])->first();
 
-        if (!$user || !$user->type === UserType::ADMIN) {
+        if (!$user || !$user->isAdmin()) {
             return back()->withErrors([
                 'email' => 'Registered account is not admin',
             ]);
@@ -51,7 +51,7 @@ class AuthController extends Controller
             ]);
         }
 
-        Auth::login($user, $validated['remember'] ?? false);
+        Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard'));

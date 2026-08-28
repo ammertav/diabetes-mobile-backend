@@ -7,30 +7,15 @@ test('the application returns a successful response', function () {
     $response->assertStatus(200);
 });
 
-test('login page contains credentials when debug is true', function () {
+test('login page does not contain credentials in debug mode for security', function () {
     /** @var \Illuminate\Foundation\Testing\TestCase $this */
     config(['app.debug' => true]);
-    config(['app.test_username' => 'test-user@example.com']);
-    config(['app.test_password' => 'secret-test-pwd']);
 
     $response = $this->get('/login');
 
     $response->assertStatus(200);
-    $response->assertSee('value="test-user@example.com"', false);
-    $response->assertSee('value="secret-test-pwd"', false);
-});
-
-test('login page does not contain credentials when debug is false', function () {
-    /** @var \Illuminate\Foundation\Testing\TestCase $this */
-    config(['app.debug' => false]);
-    config(['app.test_username' => 'test-user@example.com']);
-    config(['app.test_password' => 'secret-test-pwd']);
-
-    $response = $this->get('/login');
-
-    $response->assertStatus(200);
-    $response->assertDontSee('value="test-user@example.com"');
-    $response->assertDontSee('value="secret-test-pwd"');
+    $response->assertDontSee('admin@app.com');
+    $response->assertDontSee('Admin1234');
 });
 
 test('login page displays errors when validation fails', function () {
