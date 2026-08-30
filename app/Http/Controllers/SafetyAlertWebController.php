@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Notification\SendFcmNotificationAction;
 use App\Models\SafetyAlert;
 use App\Models\UserNotification;
 use App\Models\AlertNotificationLog;
@@ -23,16 +24,16 @@ class SafetyAlertWebController extends Controller
 
         $query = SafetyAlert::with(['user.mobileProfile', 'fgbRecord']);
 
-        if (!empty($search)) {
-            $query->whereHas('user.mobileProfile', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%");
-            });
+        if ($status !== 'all') {
+            $query->where('status', $status);
         }
 
-        if ($status === 'unresolved') {
-            $query->whereNull('acknowledged_at');
-        } elseif ($status === 'resolved') {
-            $query->whereNotNull('acknowledged_at');
+        if ($search) {
+            $query->whereHas('user.mobileProfile', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            })->orWhereHas('user', function ($q) use ($search) {
+                $q->where('email', 'like', "%{$search}%");
+            });
         }
 
         $alerts = $query->orderBy('created_at', 'desc')->paginate(10, ['*'], 'page', $page);
@@ -48,24 +49,34 @@ class SafetyAlertWebController extends Controller
         ]);
     }
 
-    public function notifyUser(Request $request, string $id)
+    public function notifyUser(Request $request, string $id, SendFcmNotificationAction $sendFcmAction)
     {
         $alert = SafetyAlert::query()->with('user.fcmDevices')->findOrFail($id);
         $user = $alert->user;
 
+        $title = 'Peringatan Darurat Medis';
+        $body = 'Gula darah Anda di luar batas aman. Mohon segera ambil tindakan pengamanan.';
+
         UserNotification::create([
             'user_id' => $user->id,
             'type' => 'safety',
-            'title' => 'Peringatan Darurat Medis',
-            'body' => 'Gula darah Anda di luar batas aman. Mohon segera ambil tindakan pengamanan.',
+            'title' => $title,
+            'body' => $body,
         ]);
 
         foreach ($user->fcmDevices as $device) {
+            $result = $sendFcmAction->execute(
+                $device->fcm_token,
+                $title,
+                $body,
+                ['alert_id' => (string) $alert->id, 'type' => 'safety']
+            );
+
             AlertNotificationLog::create([
                 'safety_alert_id' => $alert->id,
                 'fcm_token' => $device->fcm_token,
                 'sent_at' => now(),
-                'status' => 'success',
+                'status' => ($result['success'] ?? false) ? 'success' : 'failed',
             ]);
         }
 
