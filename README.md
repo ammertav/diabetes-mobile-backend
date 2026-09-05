@@ -104,8 +104,165 @@ Aplikasi Anda akan berjalan di `http://127.0.0.1:8000`.
 
 ---
 
-## 🧪 Pengujian Unit & Fitur (Testing)
+## 🧪 Pengujian Terotomatisasi (Automated Testing)
 Proyek ini dilengkapi dengan unit & feature testing menggunakan Pest/PHPUnit. Untuk menjalankan seluruh rangkaian tes otomatis:
 ```bash
 php artisan test
 ```
+
+---
+
+## 📡 Panduan Pengujian API & Skenario Testing (Tester / Developer Guide)
+
+Panduan langkah demi langkah berikut dapat digunakan untuk menguji fungsionalitas API dan Web Dashboard secara langsung.
+
+### 1. Tool Pengujian yang Disarankan: Bruno
+Di repositori proyek ini sudah tersedia koleksi **Bruno** di folder `bruno/` yang sudah terkonfigurasi dengan penyimpanan token JWT otomatis.
+- Unduh & install [Bruno](https://www.usebruno.com/).
+- Buka Bruno > **Open Collection** > Pilih folder `bruno` di repositori ini.
+- Di pojok kanan atas Bruno, pilih environment **Local** (`baseUrl: http://127.0.0.1:8000/api/v1`).
+- *(Alternatif jika menggunakan Postman/cURL: gunakan base URL `http://127.0.0.1:8000/api/v1` dan sertakan Bearer Token pada Header `Authorization: Bearer <token>`)*.
+
+---
+
+### 2. Skenario Pengujian Alur End-to-End
+
+#### Skenario 1: Autentikasi (Mendapatkan Access Token Pasien)
+Setiap endpoint API (kecuali login/register) memerlukan otentikasi Bearer Token JWT.
+- **Method**: `POST`
+- **URL**: `{{baseUrl}}/auth/login` (`http://127.0.0.1:8000/api/v1/auth/login`)
+- **Headers**: `Content-Type: application/json`
+- **Body**:
+  ```json
+  {
+    "email": "user@app.com",
+    "password": "User1234"
+  }
+  ```
+- **Cara Melihat Respon**:
+  - Respon sukses berstatus `200 OK`.
+  - Simpan nilai `data.token` untuk request selanjutnya (di Bruno, skrip otomatis menyimpannya ke variabel `{{token}}`).
+
+---
+
+#### Skenario 2: Mengelola & Memilih Protokol Puasa
+
+> **Catatan Alur**: Master protokol puasa dibuat oleh Admin (via Web Dashboard), sedangkan Pasien melihat dan memilih protokol yang ingin dijalankan via API Mobile.
+
+1. **Melihat Daftar Protokol Puasa yang Tersedia**:
+   - **Method**: `GET`
+   - **URL**: `{{baseUrl}}/protocols`
+   - **Headers**: `Authorization: Bearer <token>`
+   - **Respon `200 OK`**: Mengembalikan daftar protokol (misal: *Puasa Senin-Kamis*, *Puasa Daud*, dsb.) beserta `id`-nya.
+
+2. **Pasien Memilih Protokol**:
+   - **Method**: `POST`
+   - **URL**: `{{baseUrl}}/protocols/select`
+   - **Headers**:
+     - `Authorization: Bearer <token>`
+     - `Content-Type: application/json`
+   - **Body**:
+     ```json
+     {
+       "protocol_id": "1",
+       "start_date": "2026-09-06"
+     }
+     ```
+     *(Catatan: `start_date` harus tanggal hari ini atau masa mendatang dalam format `YYYY-MM-DD`)*.
+   - **Respon `200 OK`**:
+     ```json
+     {
+       "message": "Protocol selected"
+     }
+     ```
+
+3. **Mengecek Protokol Aktif Pasien**:
+   - **Method**: `GET`
+   - **URL**: `{{baseUrl}}/protocols/active`
+   - **Headers**: `Authorization: Bearer <token>`
+   - **Respon `200 OK`**: Menampilkan rincian protokol yang aktif serta persentase kepatuhan (`adherence_rate`).
+
+---
+
+#### Skenario 3: Mencatat Data Kadar Gula Darah (FGB Records) & Safety Alert
+
+Setiap pencatatan kadar gula darah (FGB) otomatis dianalisis oleh sistem keselamatan medis (*Safety Alert Trigger*).
+
+1. **Input Gula Darah Normal (Contoh: 110 mg/dL)**:
+   - **Method**: `POST`
+   - **URL**: `{{baseUrl}}/fgb`
+   - **Headers**:
+     - `Authorization: Bearer <token>`
+     - `Content-Type: application/json`
+   - **Body**:
+     ```json
+     {
+       "value_mg_dl": 110.0,
+       "context_tag": "morning",
+       "client_timestamp": "2026-09-05T07:00:00Z"
+     }
+     ```
+     > **Pilihan `context_tag` yang valid**: `morning`, `before_meal`, `after_meal`, `end_of_fast`, `other`.
+   - **Respon `201 Created`**:
+     ```json
+     {
+       "data": {
+         "id": "uuid-fgb-...",
+         "value_mg_dl": 110,
+         "context_tag": "morning",
+         "is_fasting_day": false,
+         "server_timestamp": "2026-09-05T11:00:00.000000Z",
+         "alert": null
+       }
+     }
+     ```
+
+2. **Input Gula Darah Bahaya (Contoh Hipoglikemia Berat: 60 mg/dL)**:
+   - Ubah `value_mg_dl` menjadi `60.0`.
+   - **Respon `201 Created`**: Perhatikan objek `alert` tidak lagi `null`:
+     ```json
+     {
+       "data": {
+         "value_mg_dl": 60,
+         "alert": {
+           "alert_type": "hypo_severe",
+           "severity": "critical",
+           "message": "FBG Anda 60 mg/dL — terlalu rendah (berbahaya). Segera konsumsi gula cepat serap."
+         }
+       }
+     }
+     ```
+
+3. **Melihat Riwayat Data FGB Pasien**:
+   - **Method**: `GET`
+   - **URL**: `{{baseUrl}}/fgb`
+   - **Headers**: `Authorization: Bearer <token>`
+   - **Respon `200 OK`**: Mengembalikan daftar riwayat seluruh data FGB milik pasien tersebut.
+
+---
+
+### 3. Membuat Master Protokol Baru (Web Dashboard Admin)
+Jika penguji ingin membuat jenis protokol puasa baru selain data bawaan seeder:
+1. Buka browser: `http://127.0.0.1:8000/login`
+2. Login sebagai Admin: `admin@app.com` / `Admin1234`
+3. Navigasi ke menu **Protokol Puasa** (`/fasting-protocols`).
+4. Klik **Tambah Protokol** (`/fasting-protocols/create`).
+5. Masukkan Nama, Tipe (`sunnah`/`intermittent`), Durasi, dan Jadwal Hari Puasa.
+6. Klik Simpan. Protokol baru akan langsung muncul di endpoint API `GET /api/v1/protocols`.
+
+---
+
+### 4. Memverifikasi Hasil di Web Monitoring Dokter/Pengawas
+Setelah data FGB dikirimkan melalui API:
+1. Tetap login di Web Dashboard Admin (`http://127.0.0.1:8000`).
+2. Buka menu **FGB Monitoring** (`/fgb-monitoring`): Grafik tren dan tabel riwayat pasien `user@app.com` akan langsung ter-update dengan data FGB yang baru diinput.
+3. Buka menu **Safety Alerts** (`/safety-alerts`): Jika data FGB bernilai bahaya (< 70 atau > 250 mg/dL), peringatan kritis baru akan muncul pada daftar pengawasan untuk dapat di-acknowledge oleh dokter.
+
+---
+
+### 5. Panduan Kode Respon HTTP (Error Reference)
+- **`200 OK` / `201 Created`**: Permintaan berhasil diproses.
+- **`401 Unauthorized`**: Token JWT belum dikirim atau sudah kedaluwarsa. Lakukan login ulang untuk memperbarui token.
+- **`422 Unprocessable Entity`**: Validasi data input gagal (misal: nilai `value_mg_dl` di luar batas 40-600, format tanggal salah, atau protokol sudah aktif). Rincian kesalahan ada di key `errors` pada respon JSON.
+- **`404 Not Found`**: Rute endpoint atau data dengan ID tertentu tidak ditemukan di database.
+
