@@ -5,6 +5,7 @@ Aplikasi backend berbasis Laravel untuk mengelola dan memonitor protokol puasa (
 
 Aplikasi ini dibagi menjadi 2 peranan utama:
 1. **API (Mobile)**: Digunakan oleh **pasien/pengguna diabetes (tipe `MOBILE`)** untuk mengelola profil, mendaftar protokol puasa, mencatat/mengakhiri puasa harian, mencatat kadar gula darah harian, serta menerima notifikasi alert kesehatan secara instan.
+   - 📖 **Spesifikasi & Kontrak REST API Lengkap**: Lihat panduan di [API_DOCUMENTATION.md](file:///Users/phosphophyllite/Documents/Development/Laravel/laravel-diabetes-app/API_DOCUMENTATION.md).
 2. **WEB Dashboard**: Digunakan oleh **pengawas/dokter (Supervisors - tipe `ADMIN`)** untuk mengawasi pasien secara real-time, mendeteksi peringatan kritis (severe alert) jika kadar gula darah berada dalam zona bahaya (hipoglikemia/hiperglikemia), serta mengonfirmasi penanganan medis yang diberikan (*acknowledgement*).
    - *Catatan:* Saat ini, sistem dikonfigurasi untuk menggunakan 1 akun pengawas utama (tipe `ADMIN`), sehingga akun administrator tunggal sudah cukup untuk mencakup kebutuhan operasional pengawas.
 
