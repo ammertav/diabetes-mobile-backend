@@ -27,7 +27,7 @@ class FastingLogController extends Controller
         return response()->json([
             'data' => $result['logs']->map(fn($log) => [
                 'id' => $log->id,
-                'planned_date' => $log->planned_date,
+                'planned_date' => $log->planned_date?->toDateString(),
                 'is_completed' => $log->status === FastingLogStatus::COMPLETED,
                 'actual_duration_min' => $log->actual_duration_min,
                 'mood' => $log->mood,
@@ -55,7 +55,7 @@ class FastingLogController extends Controller
                 'message' => 'Fasting log confirmed',
                 "data" => [
                     'id' => $log->id,
-                    'planned_date' => $log->planned_date,
+                    'planned_date' => $log->planned_date?->toDateString(),
                     'is_completed' => $log->status === FastingLogStatus::COMPLETED,
                     'mood' => $log->mood,
                     'notes' => $log->notes,
@@ -68,7 +68,7 @@ class FastingLogController extends Controller
                 'message' => 'Already confirmed',
                 "data" => [
                     'id' => $log->id,
-                    'planned_date' => $log->planned_date,
+                    'planned_date' => $log->planned_date?->toDateString(),
                     'is_completed' => $log->status === FastingLogStatus::COMPLETED,
                     'mood' => $log->mood,
                     'notes' => $log->notes,
@@ -82,7 +82,7 @@ class FastingLogController extends Controller
         }
     }
 
-    public function endFasting(int $id, EndFastingLogAction $action)
+    public function endFasting(string $id, EndFastingLogAction $action)
     {
         try {
             $action->execute($id);

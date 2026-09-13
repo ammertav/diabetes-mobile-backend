@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/auth/register
+  url: {{baseUrl}}/api/v1/auth/register
   body: json
   auth: none
 }
@@ -29,6 +29,6 @@ body:json {
 
 script:post-response {
   if (res.status === 201 && res.body.data && res.body.data.token) {
-    bru.setEnvVar("token", res.body.data.token);
+    bru.setVar("token", res.body.data.token);
   }
 }

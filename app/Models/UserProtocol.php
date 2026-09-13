@@ -6,6 +6,9 @@ use App\Enums\UserProtocolStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @mixin \Illuminate\Database\Eloquent\Builder
+ */
 class UserProtocol extends Model
 {
     use HasUuids;

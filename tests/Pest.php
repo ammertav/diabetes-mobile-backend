@@ -44,7 +44,43 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+function createAuthenticatedMobileUser(array $attributes = []): array
 {
-    // ..
+    $user = \App\Models\User::factory()->create(array_merge([
+        'email' => 'mobile.' . \Illuminate\Support\Str::random(8) . '@example.com',
+        'type' => \App\Enums\UserType::MOBILE,
+    ], $attributes));
+
+    \App\Models\MobileProfile::create([
+        'user_id' => $user->id,
+        'name' => 'Mobile User',
+        'age' => 28,
+        'gender' => \App\Enums\Gender::MALE,
+        'diabetes_status' => \App\Enums\DiabetesStatus::T2DM,
+        'bmi' => 23.5,
+        'disclaimer_accepted' => true,
+    ]);
+
+    $token = \App\Utilities\JwtUtility::generateAccessToken($user);
+
+    return [$user, $token];
+}
+
+function createFastingProtocolWithDays(array $days = [1, 3, 5], array $attributes = []): \App\Models\FastingProtocol
+{
+    $protocol = \App\Models\FastingProtocol::create(array_merge([
+        'id' => (string) \Illuminate\Support\Str::uuid(),
+        'name' => 'Puasa Test ' . \Illuminate\Support\Str::random(5),
+        'type' => \App\Enums\ProtocolType::SUNNAH->value,
+        'start_time' => '18:00',
+        'end_time' => '07:00',
+        'duration_hours' => 13,
+        'description' => 'Deskripsi test protokol',
+    ], $attributes));
+
+    foreach ($days as $day) {
+        $protocol->days()->create(['day' => $day]);
+    }
+
+    return $protocol;
 }

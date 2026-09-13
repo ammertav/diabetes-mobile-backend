@@ -401,21 +401,27 @@ Memilih protokol puasa aktif dan otomatis membuat jadwal (*planned fasting logs*
 #### Request Body
 | Field | Tipe Data | Wajib/Opsional | Aturan Validasi (*Rules*) | Keterangan |
 | :--- | :--- | :--- | :--- | :--- |
-| `protocol_id` | `integer` | **Wajib** | `required`, `exists:fasting_protocols,id` | ID protokol puasa |
-| `start_date` | `string (date)` | **Wajib** | `required`, `date`, `after_or_equal:today` | Tanggal mulai (format: `YYYY-MM-DD`, tidak boleh tanggal lampau) |
+| `protocol_id` | `string (UUID)` | **Wajib** | `required`, `uuid`, `exists:fasting_protocols,id` | ID protokol puasa (format UUID) |
+| `start_date` | `string (date)` | **Wajib** | `required`, `date_format:Y-m-d`, `after_or_equal:today` | Tanggal mulai (format: `YYYY-MM-DD`, tidak boleh tanggal lampau) |
 
 #### Contoh Request
 ```json
 {
-  "protocol_id": 1,
-  "start_date": "2026-09-07"
+  "protocol_id": "9e3b7b4a-6e1d-44a3-8b77-8f72382f1b19",
+  "start_date": "2026-09-15"
 }
 ```
 
 #### Respons Sukses (200 OK)
 ```json
 {
-  "message": "Protocol selected"
+  "message": "Protocol selected",
+  "data": {
+    "user_protocol_id": "9d901614-722a-43cf-824b-9d41d13f185d",
+    "protocol_id": "9e3b7b4a-6e1d-44a3-8b77-8f72382f1b19",
+    "start_date": "2026-09-15",
+    "status": "active"
+  }
 }
 ```
 
@@ -424,7 +430,7 @@ Memilih protokol puasa aktif dan otomatis membuat jadwal (*planned fasting logs*
 {
   "message": "Protokol puasa ini sudah aktif.",
   "data": {
-    "protocol_id": 1,
+    "protocol_id": "9e3b7b4a-6e1d-44a3-8b77-8f72382f1b19",
     "start_date": "2026-09-01",
     "end_date": null,
     "status": "active"
@@ -442,9 +448,9 @@ Mengambil rincian protokol puasa yang saat ini sedang aktif diikuti oleh user be
 #### Respons Sukses (200 OK)
 ```json
 {
-  "user_protocol_id": 3,
+  "user_protocol_id": "9d901614-722a-43cf-824b-9d41d13f185d",
   "protocol": {
-    "id": 1,
+    "id": "9e3b7b4a-6e1d-44a3-8b77-8f72382f1b19",
     "name": "Puasa Senin & Kamis",
     "type": "sunnah",
     "duration_hours": 14,

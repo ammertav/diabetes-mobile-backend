@@ -21,18 +21,21 @@ class FastingProtocolController extends Controller
         return FastingProtocolResource::collection($protocols);
     }
 
-    public function selectProtocol(Request $request, SelectFastingProtocolAction $action)
+    public function selectProtocol(\App\Http\Requests\SelectFastingProtocolRequest $request, SelectFastingProtocolAction $action)
     {
-        $validated = $request->validate([
-            'protocol_id' => 'required|exists:fasting_protocols,id',
-            'start_date' => 'required|date|after_or_equal:today',
-        ]);
+        $validated = $request->validated();
 
         try {
-            $action->execute($request->user(), (int) $validated['protocol_id'], $validated['start_date']);
+            $userProtocol = $action->execute($request->user(), $validated['protocol_id'], $validated['start_date']);
 
             return response()->json([
-                'message' => 'Protocol selected'
+                'message' => 'Protocol selected',
+                'data' => [
+                    'user_protocol_id' => $userProtocol->id,
+                    'protocol_id' => $userProtocol->fasting_protocol_id,
+                    'start_date' => $userProtocol->start_date->toDateString(),
+                    'status' => $userProtocol->status->value ?? $userProtocol->status,
+                ],
             ]);
         } catch (SameProtocolActiveException $e) {
             $activeProtocol = $e->getActiveProtocol();
@@ -44,6 +47,10 @@ class FastingProtocolController extends Controller
                     'end_date' => $activeProtocol->end_date,
                     'status' => $activeProtocol->status,
                 ]
+            ], 422);
+        } catch (\DomainException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
             ], 422);
         }
     }

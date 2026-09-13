@@ -19,9 +19,10 @@ class ConfirmFastingLogAction
             ->where('status', UserProtocolStatus::ACTIVE)
             ->firstOrFail();
 
+        /** @var FastingLog|null $log */
         $log = FastingLog::query()
             ->where('user_protocol_id', $userProtocol->id)
-            ->where('planned_date', $data['planned_date'])
+            ->whereDate('planned_date', '=', $data['planned_date'], 'and')
             ->first();
 
         if (!$log) {

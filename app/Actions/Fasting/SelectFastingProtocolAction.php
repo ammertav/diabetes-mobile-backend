@@ -2,26 +2,33 @@
 
 namespace App\Actions\Fasting;
 
+use App\Enums\FastingLogStatus;
+use App\Enums\UserProtocolStatus;
+use App\Exceptions\SameProtocolActiveException;
+use App\Models\FastingLog;
+use App\Models\FastingProtocol;
 use App\Models\User;
 use App\Models\UserProtocol;
-use App\Models\FastingLog;
-use App\Enums\UserProtocolStatus;
-use App\Enums\FastingLogStatus;
-use App\Exceptions\SameProtocolActiveException;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class SelectFastingProtocolAction
 {
-    public function execute(User $user, int $protocolId, string $startDate): void
+    public function execute(User $user, string $protocolId, string $startDate): UserProtocol
     {
-        $activeProtocol = $user->activeProtocol()->first();
+        $protocol = FastingProtocol::with('days')->findOrFail($protocolId);
 
-        if ($activeProtocol && $activeProtocol->fasting_protocol_id === $protocolId) {
+        if ($protocol->days->isEmpty()) {
+            throw new \DomainException("Protokol '{$protocol->name}' belum memiliki jadwal hari puasa.");
+        }
+
+        $activeProtocol = $user->activeProtocol()->first();
+        if ($activeProtocol && $activeProtocol->fasting_protocol_id === $protocol->id) {
             throw new SameProtocolActiveException($activeProtocol);
         }
 
-        DB::transaction(function () use ($user, $protocolId, $startDate) {
+        return DB::transaction(function () use ($user, $protocol, $startDate) {
             UserProtocol::query()
                 ->where('user_id', $user->id)
                 ->where('status', UserProtocolStatus::ACTIVE)
@@ -32,27 +39,40 @@ class SelectFastingProtocolAction
 
             $userProtocol = UserProtocol::create([
                 'user_id' => $user->id,
-                'fasting_protocol_id' => $protocolId,
+                'fasting_protocol_id' => $protocol->id,
                 'start_date' => $startDate,
                 'status' => UserProtocolStatus::ACTIVE,
             ]);
 
-            $protocol = $userProtocol->protocol;
+            $this->createPlannedLogs($userProtocol->id, $protocol->days->pluck('day')->all(), $startDate);
 
-            $start = Carbon::parse($startDate);
-            $end = $start->copy()->addWeeks(4);
-
-            $fastingDays = $protocol->days->pluck('day')->values()->toArray();
-
-            for ($date = $start; $date->lte($end); $date->addDay()) {
-                if (in_array($date->dayOfWeekIso, $fastingDays)) {
-                    FastingLog::create([
-                        'user_protocol_id' => $userProtocol->id,
-                        'planned_date' => $date->toDateString(),
-                        'status' => FastingLogStatus::PLANNED,
-                    ]);
-                }
-            }
+            return $userProtocol;
         });
+    }
+
+    private function createPlannedLogs(string $userProtocolId, array $days, string $startDate): void
+    {
+        $fastingDays = array_map('intval', $days);
+        $start = Carbon::parse($startDate);
+        $end = $start->copy()->addWeeks(4);
+        $now = now();
+        $logs = [];
+
+        for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+            if (in_array($date->dayOfWeekIso, $fastingDays, true)) {
+                $logs[] = [
+                    'id' => (string) Str::uuid(),
+                    'user_protocol_id' => $userProtocolId,
+                    'planned_date' => $date->toDateString(),
+                    'status' => FastingLogStatus::PLANNED->value,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+        }
+
+        if (!empty($logs)) {
+            DB::table('fasting_logs')->insert($logs);
+        }
     }
 }

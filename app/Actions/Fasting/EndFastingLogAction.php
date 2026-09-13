@@ -7,7 +7,7 @@ use App\Enums\FastingLogStatus;
 
 class EndFastingLogAction
 {
-    public function execute(int $id): FastingLog
+    public function execute(string $id): FastingLog
     {
         $log = FastingLog::findOrFail($id);
 
@@ -22,7 +22,7 @@ class EndFastingLogAction
         $end = now();
 
         $duration = $log->started_at
-            ? $end->diffInMinutes($log->started_at)
+            ? (int) abs($end->diffInMinutes($log->started_at))
             : null;
 
         $log->update([
