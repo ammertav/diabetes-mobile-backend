@@ -45,6 +45,43 @@
             <input type="hidden" name="is_published"
                 :value="editForm.is_published">
 
+            <!-- Media Banner Live Preview -->
+            <template x-if="selectedContent && selectedContent.media_type && (selectedContent.media_type !== 'none' && selectedContent.media_type?.value !== 'none') && (selectedContent.media_url || selectedContent.youtube_id)">
+                <div class="relative w-full aspect-video rounded-xl overflow-hidden bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-inner group">
+                    <!-- IMAGE -->
+                    <template x-if="selectedContent.media_type === 'image' || selectedContent.media_type?.value === 'image'">
+                        <img :src="selectedContent.media_url?.startsWith('http') ? selectedContent.media_url : '/storage/' + selectedContent.media_url"
+                             class="w-full h-full object-cover" alt="Banner Image" />
+                    </template>
+
+                    <!-- VIDEO -->
+                    <template x-if="selectedContent.media_type === 'video' || selectedContent.media_type?.value === 'video'">
+                        <div class="w-full h-full relative flex items-center justify-center bg-black">
+                            <template x-if="selectedContent.thumbnail_url">
+                                <img :src="selectedContent.thumbnail_url?.startsWith('http') ? selectedContent.thumbnail_url : '/storage/' + selectedContent.thumbnail_url"
+                                     class="w-full h-full object-cover brightness-75" alt="Video Cover" />
+                            </template>
+                            <div class="absolute w-12 h-12 rounded-full bg-white/90 text-primary flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                <span class="material-symbols-outlined text-2xl">play_arrow</span>
+                            </div>
+                            <span class="absolute bottom-2 right-2 px-2 py-0.5 bg-black/70 text-white text-[10px] font-mono rounded font-semibold">VIDEO MP4</span>
+                        </div>
+                    </template>
+
+                    <!-- YOUTUBE -->
+                    <template x-if="selectedContent.media_type === 'youtube' || selectedContent.media_type?.value === 'youtube'">
+                        <div class="w-full h-full relative flex items-center justify-center bg-black">
+                            <img :src="selectedContent.thumbnail_url || ('https://img.youtube.com/vi/' + (selectedContent.youtube_id || '') + '/hqdefault.jpg')"
+                                 class="w-full h-full object-cover brightness-75" alt="YouTube Cover" />
+                            <div class="absolute w-12 h-12 rounded-full bg-rose-600 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                <span class="material-symbols-outlined text-2xl">smart_display</span>
+                            </div>
+                            <span class="absolute bottom-2 right-2 px-2 py-0.5 bg-rose-600 text-white text-[10px] font-mono rounded font-bold">YOUTUBE</span>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
             <!-- 1. Title, Type & Status Section -->
             <div>
                 <!-- Display Mode -->

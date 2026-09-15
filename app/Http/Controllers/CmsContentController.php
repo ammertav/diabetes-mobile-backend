@@ -2,20 +2,27 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Content\CreateCmsContentAction;
+use App\Actions\Content\DeleteCmsContentAction;
+use App\Actions\Content\UpdateCmsContentAction;
+use App\Http\Requests\StoreCmsContentRequest;
+use App\Http\Requests\UpdateCmsContentRequest;
 use App\Models\CmsContent;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class CmsContentController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $query = CmsContent::query();
 
         if ($request->filled('search')) {
-            $search = '%' . $request->input('search') . '%';
+            $search = '%'.$request->input('search').'%';
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', $search)
-                  ->orWhere('id', 'like', $search);
+                    ->orWhere('id', 'like', $search);
             });
         }
 
@@ -32,75 +39,53 @@ class CmsContentController extends Controller
         return view('cms.index', compact('contents'));
     }
 
-    public function create()
+    public function create(): View
     {
-        return view('cms.store', [
-            'content' => null,
-        ]);
+        return view('cms.store', ['content' => null]);
     }
 
-    public function store(Request $request)
+    public function store(StoreCmsContentRequest $request, CreateCmsContentAction $action): RedirectResponse
     {
-        $validated = $this->validateContent($request);
+        $action->execute(
+            $request->validated(),
+            $request->file('image_file'),
+            $request->file('video_file'),
+            $request->file('thumbnail_file')
+        );
 
-        CmsContent::create([
-            'content_type' => $validated['type'],
-            'day_context' => $validated['day_context'] ?? null,
-            'title' => $validated['title'],
-            'body' => $validated['body'],
-            'is_published' => (bool)$validated['is_published'],
-            'published_at' => (bool)$validated['is_published'] ? now() : null,
-        ]);
-
-        return redirect()
-            ->route('cms')
-            ->with('success', 'Konten berhasil dibuat.');
+        return redirect()->route('cms')->with('success', 'Konten berhasil dibuat.');
     }
 
-    public function edit(string $id)
+    public function edit(string $id): View
     {
         $content = CmsContent::findOrFail($id);
 
         return view('cms.store', compact('content'));
     }
 
-    public function update(string $id, Request $request)
-    {
+    public function update(
+        string $id,
+        UpdateCmsContentRequest $request,
+        UpdateCmsContentAction $action
+    ): RedirectResponse {
         $content = CmsContent::findOrFail($id);
-        $validated = $this->validateContent($request);
 
-        $content->update([
-            'content_type' => $validated['type'],
-            'day_context' => $validated['day_context'] ?? null,
-            'title' => $validated['title'],
-            'body' => $validated['body'],
-            'is_published' => (bool)$validated['is_published'],
-            'published_at' => (bool)$validated['is_published'] ? ($content->published_at ?? now()) : null,
-        ]);
+        $action->execute(
+            $content,
+            $request->validated(),
+            $request->file('image_file'),
+            $request->file('video_file'),
+            $request->file('thumbnail_file')
+        );
 
-        return redirect()
-            ->route('cms')
-            ->with('success', 'Konten berhasil diperbarui.');
+        return redirect()->route('cms')->with('success', 'Konten berhasil diperbarui.');
     }
 
-    public function destroy(string $id)
+    public function destroy(string $id, DeleteCmsContentAction $action): RedirectResponse
     {
         $content = CmsContent::findOrFail($id);
-        $content->delete();
+        $action->execute($content);
 
-        return redirect()
-            ->route('cms')
-            ->with('success', 'Konten berhasil dihapus.');
-    }
-
-    private function validateContent(Request $request): array
-    {
-        return $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'type' => ['required', 'string', 'max:100'],
-            'day_context' => ['nullable', 'string', 'max:100'],
-            'body' => ['required', 'string'],
-            'is_published' => ['required', 'in:0,1'],
-        ]);
+        return redirect()->route('cms')->with('success', 'Konten berhasil dihapus.');
     }
 }

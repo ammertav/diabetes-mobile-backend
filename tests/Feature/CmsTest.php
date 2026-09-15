@@ -1,13 +1,18 @@
 <?php
 
-use App\Models\User;
-use App\Models\AdminProfile;
-use App\Models\CmsContent;
-use App\Enums\UserType;
-use App\Enums\Gender;
 use App\Enums\CmsContentType;
 use App\Enums\CmsDayContext;
+use App\Enums\CmsMediaType;
+use App\Enums\Gender;
+use App\Enums\UserType;
+use App\Models\AdminProfile;
+use App\Models\CmsContent;
+use App\Models\User;
+use App\Utilities\JwtUtility;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\TestCase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -43,13 +48,13 @@ beforeEach(function () {
 });
 
 test('guest cannot access cms index', function () {
-    /** @var \Illuminate\Foundation\Testing\TestCase $this */
+    /** @var TestCase $this */
     $response = $this->get('/cms');
     $response->assertRedirect('/login');
 });
 
 test('admin can see all cms contents', function () {
-    /** @var \Illuminate\Foundation\Testing\TestCase $this */
+    /** @var TestCase $this */
     $response = $this->actingAs($this->admin)->get('/cms');
 
     $response->assertStatus(200);
@@ -58,7 +63,7 @@ test('admin can see all cms contents', function () {
 });
 
 test('admin can filter cms contents by search query', function () {
-    /** @var \Illuminate\Foundation\Testing\TestCase $this */
+    /** @var TestCase $this */
     $response = $this->actingAs($this->admin)->get('/cms?search=Nutrisi');
 
     $response->assertStatus(200);
@@ -67,7 +72,7 @@ test('admin can filter cms contents by search query', function () {
 });
 
 test('admin can filter cms contents by type', function () {
-    /** @var \Illuminate\Foundation\Testing\TestCase $this */
+    /** @var TestCase $this */
     $response = $this->actingAs($this->admin)->get('/cms?type=safety_guide');
 
     $response->assertStatus(200);
@@ -76,7 +81,7 @@ test('admin can filter cms contents by type', function () {
 });
 
 test('admin can filter cms contents by day context', function () {
-    /** @var \Illuminate\Foundation\Testing\TestCase $this */
+    /** @var TestCase $this */
     $response = $this->actingAs($this->admin)->get('/cms?day_context=monday');
 
     $response->assertStatus(200);
@@ -85,7 +90,7 @@ test('admin can filter cms contents by day context', function () {
 });
 
 test('admin can store new cms content', function () {
-    /** @var \Illuminate\Foundation\Testing\TestCase $this */
+    /** @var TestCase $this */
     $response = $this->actingAs($this->admin)->post('/cms', [
         'title' => 'Test Motivasi Baru',
         'type' => 'motivation',
@@ -108,7 +113,7 @@ test('admin can store new cms content', function () {
 test('admin can update existing cms content', function () {
     $content = CmsContent::first();
 
-    /** @var \Illuminate\Foundation\Testing\TestCase $this */
+    /** @var TestCase $this */
     $response = $this->actingAs($this->admin)->put("/cms/{$content->id}", [
         'title' => 'Judul Baru Terupdate',
         'type' => 'nutrition',
@@ -131,7 +136,7 @@ test('admin can update existing cms content', function () {
 test('admin can delete cms content', function () {
     $content = CmsContent::first();
 
-    /** @var \Illuminate\Foundation\Testing\TestCase $this */
+    /** @var TestCase $this */
     $response = $this->actingAs($this->admin)->delete("/cms/{$content->id}");
 
     $response->assertRedirect('/cms');
@@ -139,5 +144,149 @@ test('admin can delete cms content', function () {
 
     $this->assertDatabaseMissing('cms_contents', [
         'id' => $content->id,
+    ]);
+});
+
+test('admin can upload image to cms content', function () {
+    Storage::fake('public');
+    $image = UploadedFile::fake()->image('banner.jpg', 600, 400);
+
+    /** @var TestCase $this */
+    $response = $this->actingAs($this->admin)->post('/cms', [
+        'title' => 'Edukasi Bergambar',
+        'type' => 'education',
+        'body' => 'Isi edukasi bergambar.',
+        'is_published' => '1',
+        'media_type' => 'image',
+        'image_file' => $image,
+    ]);
+
+    $response->assertRedirect('/cms');
+    $content = CmsContent::where('title', 'Edukasi Bergambar')->first();
+    expect($content)->not->toBeNull()
+        ->and($content->media_type)->toBe(CmsMediaType::Image)
+        ->and($content->media_url)->not->toBeNull();
+
+    Storage::disk('public')->assertExists($content->media_url);
+});
+
+test('admin can upload video under 50mb with custom thumbnail', function () {
+    Storage::fake('public');
+    $video = UploadedFile::fake()->create('workout.mp4', 35000, 'video/mp4');
+    $thumb = UploadedFile::fake()->image('thumb.jpg', 400, 300);
+
+    /** @var TestCase $this */
+    $response = $this->actingAs($this->admin)->post('/cms', [
+        'title' => 'Video Workout Diabetes',
+        'type' => 'education',
+        'body' => 'Ikuti gerakan senam ini.',
+        'is_published' => '1',
+        'media_type' => 'video',
+        'video_file' => $video,
+        'thumbnail_file' => $thumb,
+    ]);
+
+    $response->assertRedirect('/cms');
+    $content = CmsContent::where('title', 'Video Workout Diabetes')->first();
+    expect($content)->not->toBeNull()
+        ->and($content->media_type)->toBe(CmsMediaType::Video)
+        ->and($content->media_url)->not->toBeNull()
+        ->and($content->thumbnail_url)->not->toBeNull();
+
+    Storage::disk('public')->assertExists($content->media_url);
+    Storage::disk('public')->assertExists($content->thumbnail_url);
+});
+
+test('admin cannot upload video exceeding 50mb', function () {
+    Storage::fake('public');
+    $largeVideo = UploadedFile::fake()->create('heavy.mp4', 55000, 'video/mp4');
+
+    /** @var TestCase $this */
+    $response = $this->actingAs($this->admin)->post('/cms', [
+        'title' => 'Video Terlalu Besar',
+        'type' => 'education',
+        'body' => 'Video berukuran besar.',
+        'is_published' => '1',
+        'media_type' => 'video',
+        'video_file' => $largeVideo,
+    ]);
+
+    $response->assertSessionHasErrors(['video_file']);
+});
+
+test('admin can save youtube link with auto-extracted id and thumbnail', function () {
+    /** @var TestCase $this */
+    $response = $this->actingAs($this->admin)->post('/cms', [
+        'title' => 'Video Edukasi YouTube',
+        'type' => 'education',
+        'body' => 'Video panduan dari YouTube.',
+        'is_published' => '1',
+        'media_type' => 'youtube',
+        'video_url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    ]);
+
+    $response->assertRedirect('/cms');
+    $content = CmsContent::where('title', 'Video Edukasi YouTube')->first();
+    expect($content)->not->toBeNull()
+        ->and($content->media_type)->toBe(CmsMediaType::Youtube)
+        ->and($content->youtube_id)->toBe('dQw4w9WgXcQ')
+        ->and($content->thumbnail_url)->toBe('https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg');
+});
+
+test('admin can create content with media type none', function () {
+    /** @var TestCase $this */
+    $response = $this->actingAs($this->admin)->post('/cms', [
+        'title' => 'Teks Motivasi Murni',
+        'type' => 'motivation',
+        'body' => 'Motivasi tanpa media.',
+        'is_published' => '1',
+        'media_type' => 'none',
+    ]);
+
+    $response->assertRedirect('/cms');
+    $content = CmsContent::where('title', 'Teks Motivasi Murni')->first();
+    expect($content->media_type)->toBe(CmsMediaType::None)
+        ->and($content->media_url)->toBeNull();
+});
+
+test('mobile api returns media payload with full url', function () {
+    Storage::fake('public');
+    $image = UploadedFile::fake()->image('banner.jpg');
+    $path = $image->store('cms/images', 'public');
+
+    CmsContent::create([
+        'title' => 'Konten Dengan Media API',
+        'content_type' => CmsContentType::Education,
+        'body' => 'Konten untuk pengetesan mobile API.',
+        'media_type' => CmsMediaType::Image,
+        'media_url' => $path,
+        'is_published' => true,
+        'published_at' => now(),
+    ]);
+
+    $patient = User::create([
+        'email' => 'patient@example.com',
+        'type' => UserType::MOBILE,
+    ]);
+
+    $token = JwtUtility::generateAccessToken($patient);
+
+    /** @var TestCase $this */
+    $response = $this->withHeader('Authorization', 'Bearer '.$token)->getJson('/api/v1/content');
+    $response->assertStatus(200);
+    $response->assertJsonStructure([
+        'data' => [
+            '*' => [
+                'id',
+                'title',
+                'body',
+                'media' => [
+                    'type',
+                    'url',
+                    'youtube_id',
+                    'thumbnail_url',
+                ],
+            ],
+        ],
     ]);
 });

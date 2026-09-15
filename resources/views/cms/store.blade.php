@@ -21,6 +21,32 @@
             <form
                 method="POST"
                 action="{{ $content ? route('cms-update', $content->id) : route('cms-store') }}"
+                enctype="multipart/form-data"
+                x-data="{
+                    mediaType: '{{ old('media_type', $content->media_type->value ?? 'image') }}',
+                    imagePreview: '{{ $content && $content->media_type === \App\Enums\CmsMediaType::Image && $content->media_url ? asset('storage/' . $content->media_url) : '' }}',
+                    videoPreview: '{{ $content && $content->media_type === \App\Enums\CmsMediaType::Video && $content->media_url ? asset('storage/' . $content->media_url) : '' }}',
+                    thumbnailPreview: '{{ $content && $content->thumbnail_url ? (str_starts_with($content->thumbnail_url, 'http') ? $content->thumbnail_url : asset('storage/' . $content->thumbnail_url)) : '' }}',
+                    youtubeUrl: '{{ old('video_url', $content && $content->media_type === \App\Enums\CmsMediaType::Youtube ? $content->media_url : '') }}',
+                    youtubeId: '{{ $content->youtube_id ?? '' }}',
+                    handleImageChange(e) {
+                        const file = e.target.files[0];
+                        if (file) this.imagePreview = URL.createObjectURL(file);
+                    },
+                    handleVideoChange(e) {
+                        const file = e.target.files[0];
+                        if (file) this.videoPreview = URL.createObjectURL(file);
+                    },
+                    handleThumbChange(e) {
+                        const file = e.target.files[0];
+                        if (file) this.thumbnailPreview = URL.createObjectURL(file);
+                    },
+                    updateYoutube(url) {
+                        this.youtubeUrl = url;
+                        const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/);
+                        this.youtubeId = match ? match[1] : '';
+                    }
+                }"
                 class="space-y-6">
                 @csrf
                 @if($content)
@@ -72,6 +98,9 @@
                     </div>
                 </div>
 
+                <!-- Media Inputs Partial -->
+                @include('cms.partials._media_inputs')
+
                 <!-- Content Body Area -->
                 <div>
                     <label class="block font-headline text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Isi Konten</label>
@@ -88,30 +117,17 @@
                 <div>
                     <label class="block font-headline text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Status Publikasi</label>
                     <div class="flex items-center gap-6 bg-surface-container-low p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-                        <!-- Draft -->
                         <label class="flex items-center gap-3 cursor-pointer group">
-                            <input
-                                type="radio"
-                                name="is_published"
-                                value="0"
+                            <input type="radio" name="is_published" value="0"
                                 {{ old('is_published', isset($content) ? ($content->is_published ? '1' : '0') : '0') == '0' ? 'checked' : '' }}
                                 class="text-primary focus:ring-primary/30" />
-                            <span class="text-xs font-semibold text-slate-700 group-hover:text-primary transition-colors">
-                                Draft
-                            </span>
+                            <span class="text-xs font-semibold text-slate-700 group-hover:text-primary transition-colors">Draft</span>
                         </label>
-
-                        <!-- Published -->
                         <label class="flex items-center gap-3 cursor-pointer group">
-                            <input
-                                type="radio"
-                                name="is_published"
-                                value="1"
+                            <input type="radio" name="is_published" value="1"
                                 {{ old('is_published', isset($content) ? ($content->is_published ? '1' : '0') : '0') == '1' ? 'checked' : '' }}
                                 class="text-primary focus:ring-primary/30" />
-                            <span class="text-xs font-semibold text-slate-700 group-hover:text-primary transition-colors">
-                                Published
-                            </span>
+                            <span class="text-xs font-semibold text-slate-700 group-hover:text-primary transition-colors">Published</span>
                         </label>
                     </div>
                 </div>
