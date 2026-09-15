@@ -16,7 +16,7 @@ class StoreCmsContentRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         if (! $this->has('media_type') || empty($this->media_type)) {
-            $this->merge(['media_type' => CmsMediaType::Image->value]);
+            $this->merge(['media_type' => CmsMediaType::None->value]);
         }
     }
 

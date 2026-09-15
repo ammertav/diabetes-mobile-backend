@@ -35,7 +35,7 @@ class CmsContentResource extends JsonResource
             'title' => $this->title,
             'body' => $this->body,
             'media' => [
-                'type' => $this->media_type?->value ?? 'image',
+                'type' => $this->media_type?->value ?? 'none',
                 'url' => $mediaUrl,
                 'youtube_id' => $this->youtube_id,
                 'thumbnail_url' => $thumbnailUrl,

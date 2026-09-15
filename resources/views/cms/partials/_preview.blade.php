@@ -1,86 +1,84 @@
 <div class="col-span-12 lg:col-span-4" x-data="{
     activeEditField: null,
-    editForm: { title: '', type: 'education', day_context: '', body: '', is_published: 1 },
+    editForm: { title: '', type: 'education', day_context: '', body: '', is_published: 1, media_type: 'none', video_url: '' },
+    previewImg: '',
+    previewVid: '',
+    previewThumb: '',
     get selectedContent() {
         return this.contents.find(c => c.id === this.selectedContentId);
     },
     openEdit(field) {
         if (!this.selectedContent) return;
+        const s = this.selectedContent;
         this.editForm = {
-            title: this.selectedContent.title,
-            type: this.selectedContent.content_type?.value || this.selectedContent.content_type || 'education',
-            day_context: this.selectedContent.day_context?.value || this.selectedContent.day_context || '',
-            body: this.selectedContent.body || '',
-            is_published: this.selectedContent.is_published ? 1 : 0
+            title: s.title,
+            type: s.content_type?.value || s.content_type || 'education',
+            day_context: s.day_context?.value || s.day_context || '',
+            body: s.body || '',
+            is_published: s.is_published ? 1 : 0,
+            media_type: s.media_type?.value || s.media_type || 'none',
+            video_url: s.media_url?.startsWith('http') ? s.media_url : ''
         };
+        this.previewImg = (this.editForm.media_type === 'image' && s.media_url)
+            ? (s.media_url.startsWith('http') ? s.media_url : '/storage/' + s.media_url) : '';
+        this.previewVid = (this.editForm.media_type === 'video' && s.media_url)
+            ? (s.media_url.startsWith('http') ? s.media_url : '/storage/' + s.media_url) : '';
+        this.previewThumb = s.thumbnail_url
+            ? (s.thumbnail_url.startsWith('http') ? s.thumbnail_url : '/storage/' + s.thumbnail_url) : '';
         this.activeEditField = field;
     },
     closeEdit() {
         this.activeEditField = null;
+    },
+    hasMedia() {
+        if (!this.selectedContent) return false;
+        const type = this.selectedContent.media_type?.value || this.selectedContent.media_type;
+        return type && type !== 'none' && (this.selectedContent.media_url || this.selectedContent.youtube_id);
+    },
+    handleInlineImage(e) {
+        const file = e.target.files[0];
+        if (file) this.previewImg = URL.createObjectURL(file);
+    },
+    handleInlineVideo(e) {
+        const file = e.target.files[0];
+        if (file) this.previewVid = URL.createObjectURL(file);
+    },
+    handleInlineThumb(e) {
+        const file = e.target.files[0];
+        if (file) this.previewThumb = URL.createObjectURL(file);
+    },
+    updateInlineYoutube(url) {
+        this.editForm.video_url = url;
+        const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/);
+        if (match && match[1]) {
+            this.previewThumb = 'https://img.youtube.com/vi/' + match[1] + '/hqdefault.jpg';
+        }
     }
 }">
     <div id="preview-panel" x-show="selectedContent"
         class="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm sticky top-20 space-y-6">
         <!-- Header -->
-        <div
-            class="flex items-center justify-between pb-3 border-b border-slate-100">
-            <h5 class="text-base font-bold font-headline text-slate-900">CMS Live
-                Preview</h5>
-            <span
-                class="bg-emerald-100 text-emerald-800 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider">LIVE
-                PREVIEW</span>
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h5 class="text-base font-bold font-headline text-slate-900">CMS Live Preview</h5>
+            <span class="bg-emerald-100 text-emerald-800 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider">LIVE PREVIEW</span>
         </div>
 
         <form x-show="selectedContent" :action="'/cms/' + selectedContent?.id"
-            method="POST" class="space-y-6">
+            method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('PUT')
 
             <!-- Hidden preserving inputs -->
             <input type="hidden" name="title" :value="editForm.title">
             <input type="hidden" name="type" :value="editForm.type">
-            <input type="hidden" name="day_context"
-                :value="editForm.day_context">
+            <input type="hidden" name="day_context" :value="editForm.day_context">
             <input type="hidden" name="body" :value="editForm.body">
-            <input type="hidden" name="is_published"
-                :value="editForm.is_published">
+            <input type="hidden" name="is_published" :value="editForm.is_published">
+            <input type="hidden" name="media_type" :value="editForm.media_type">
+            <input type="hidden" name="video_url" :value="editForm.video_url">
 
-            <!-- Media Banner Live Preview -->
-            <template x-if="selectedContent && selectedContent.media_type && (selectedContent.media_type !== 'none' && selectedContent.media_type?.value !== 'none') && (selectedContent.media_url || selectedContent.youtube_id)">
-                <div class="relative w-full aspect-video rounded-xl overflow-hidden bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-inner group">
-                    <!-- IMAGE -->
-                    <template x-if="selectedContent.media_type === 'image' || selectedContent.media_type?.value === 'image'">
-                        <img :src="selectedContent.media_url?.startsWith('http') ? selectedContent.media_url : '/storage/' + selectedContent.media_url"
-                             class="w-full h-full object-cover" alt="Banner Image" />
-                    </template>
-
-                    <!-- VIDEO -->
-                    <template x-if="selectedContent.media_type === 'video' || selectedContent.media_type?.value === 'video'">
-                        <div class="w-full h-full relative flex items-center justify-center bg-black">
-                            <template x-if="selectedContent.thumbnail_url">
-                                <img :src="selectedContent.thumbnail_url?.startsWith('http') ? selectedContent.thumbnail_url : '/storage/' + selectedContent.thumbnail_url"
-                                     class="w-full h-full object-cover brightness-75" alt="Video Cover" />
-                            </template>
-                            <div class="absolute w-12 h-12 rounded-full bg-white/90 text-primary flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                                <span class="material-symbols-outlined text-2xl">play_arrow</span>
-                            </div>
-                            <span class="absolute bottom-2 right-2 px-2 py-0.5 bg-black/70 text-white text-[10px] font-mono rounded font-semibold">VIDEO MP4</span>
-                        </div>
-                    </template>
-
-                    <!-- YOUTUBE -->
-                    <template x-if="selectedContent.media_type === 'youtube' || selectedContent.media_type?.value === 'youtube'">
-                        <div class="w-full h-full relative flex items-center justify-center bg-black">
-                            <img :src="selectedContent.thumbnail_url || ('https://img.youtube.com/vi/' + (selectedContent.youtube_id || '') + '/hqdefault.jpg')"
-                                 class="w-full h-full object-cover brightness-75" alt="YouTube Cover" />
-                            <div class="absolute w-12 h-12 rounded-full bg-rose-600 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                                <span class="material-symbols-outlined text-2xl">smart_display</span>
-                            </div>
-                            <span class="absolute bottom-2 right-2 px-2 py-0.5 bg-rose-600 text-white text-[10px] font-mono rounded font-bold">YOUTUBE</span>
-                        </div>
-                    </template>
-                </div>
-            </template>
+            <!-- Media Banner & Inline Edit Live Preview -->
+            @include('cms.partials._preview_media')
 
             <!-- 1. Title, Type & Status Section -->
             <div>
