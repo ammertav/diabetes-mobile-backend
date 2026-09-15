@@ -4,11 +4,13 @@
     previewImg: '',
     previewVid: '',
     previewThumb: '',
+    isPlayingYoutube: false,
     get selectedContent() {
         return this.contents.find(c => c.id === this.selectedContentId);
     },
     openEdit(field) {
         if (!this.selectedContent) return;
+        this.isPlayingYoutube = false;
         const s = this.selectedContent;
         this.editForm = {
             title: s.title,
@@ -29,6 +31,7 @@
     },
     closeEdit() {
         this.activeEditField = null;
+        this.isPlayingYoutube = false;
     },
     hasMedia() {
         if (!this.selectedContent) return false;

@@ -13,33 +13,43 @@
 
                 <!-- VIDEO -->
                 <template x-if="selectedContent.media_type === 'video' || selectedContent.media_type?.value === 'video'">
-                    <div class="w-full h-full relative flex items-center justify-center bg-black">
-                        <template x-if="selectedContent.thumbnail_url">
-                            <img :src="selectedContent.thumbnail_url?.startsWith('http') ? selectedContent.thumbnail_url : '/storage/' + selectedContent.thumbnail_url"
-                                 class="w-full h-full object-cover brightness-75" alt="Video Cover" />
-                        </template>
-                        <div class="absolute w-12 h-12 rounded-full bg-white/90 text-primary flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                            <span class="material-symbols-outlined text-2xl">play_arrow</span>
-                        </div>
-                        <span class="absolute bottom-2 right-2 px-2 py-0.5 bg-black/70 text-white text-[10px] font-mono rounded font-semibold">VIDEO MP4</span>
+                    <div class="w-full h-full relative bg-black flex items-center justify-center">
+                        <video :key="selectedContent.id + '_' + selectedContent.media_url"
+                            :src="selectedContent.media_url?.startsWith('http') ? selectedContent.media_url : '/storage/' + selectedContent.media_url"
+                            :poster="selectedContent.thumbnail_url ? (selectedContent.thumbnail_url.startsWith('http') ? selectedContent.thumbnail_url : '/storage/' + selectedContent.thumbnail_url) : ''"
+                            class="w-full h-full object-contain" controls preload="metadata"></video>
                     </div>
                 </template>
 
                 <!-- YOUTUBE -->
                 <template x-if="selectedContent.media_type === 'youtube' || selectedContent.media_type?.value === 'youtube'">
-                    <div class="w-full h-full relative flex items-center justify-center bg-black">
-                        <img :src="selectedContent.thumbnail_url || ('https://img.youtube.com/vi/' + (selectedContent.youtube_id || '') + '/hqdefault.jpg')"
-                             class="w-full h-full object-cover brightness-75" alt="YouTube Cover" />
-                        <div class="absolute w-12 h-12 rounded-full bg-rose-600 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                            <span class="material-symbols-outlined text-2xl">smart_display</span>
-                        </div>
-                        <span class="absolute bottom-2 right-2 px-2 py-0.5 bg-rose-600 text-white text-[10px] font-mono rounded font-bold">YOUTUBE</span>
+                    <div class="w-full h-full relative bg-black flex items-center justify-center overflow-hidden">
+                        <template x-if="!isPlayingYoutube">
+                            <div @click="isPlayingYoutube = true" class="w-full h-full relative flex items-center justify-center cursor-pointer group/yt">
+                                <img :src="selectedContent.thumbnail_url || ('https://img.youtube.com/vi/' + (selectedContent.youtube_id || '') + '/hqdefault.jpg')"
+                                     class="w-full h-full object-cover brightness-75 group-hover/yt:brightness-90 transition-all" alt="YouTube Cover" />
+                                <div class="absolute w-14 h-14 rounded-full bg-rose-600 text-white flex items-center justify-center shadow-xl group-hover/yt:scale-110 transition-transform">
+                                    <span class="material-symbols-outlined text-3xl">smart_display</span>
+                                </div>
+                                <span class="absolute bottom-2 right-2 px-2 py-0.5 bg-rose-600 text-white text-[10px] font-mono rounded font-bold">KLIK UNTUK PUTAR</span>
+                            </div>
+                        </template>
+                        <template x-if="isPlayingYoutube">
+                            <iframe
+                                :key="selectedContent.youtube_id"
+                                :src="'https://www.youtube.com/embed/' + selectedContent.youtube_id + '?autoplay=1&rel=0'"
+                                class="w-full h-full"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen>
+                            </iframe>
+                        </template>
                     </div>
                 </template>
 
                 <!-- Edit Floating Button -->
                 <button type="button" @click="openEdit('media')"
-                    class="absolute top-3 right-3 px-3 py-1.5 bg-slate-900/75 hover:bg-slate-900 text-white text-xs font-semibold rounded-lg backdrop-blur-md shadow flex items-center gap-1.5 opacity-90 group-hover:opacity-100 transition-all">
+                    class="absolute top-3 right-3 z-20 px-3 py-1.5 bg-slate-900/80 hover:bg-slate-900 text-white text-xs font-semibold rounded-lg backdrop-blur-md shadow flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-all">
                     <span class="material-symbols-outlined text-sm">edit</span>
                     <span>Ubah Media</span>
                 </button>
