@@ -23,57 +23,84 @@
         @enderror
     </div>
 
-    <!-- 1. IMAGE INPUT SECTION -->
+    <!-- 1. IMAGE INPUT SECTION (Full-Width Unified Preview) -->
     <div x-show="mediaType === 'image'" x-cloak class="space-y-3">
         <label class="block font-headline text-[10px] font-bold text-slate-400 uppercase tracking-widest">
             Berkas Gambar (Maks 3MB)
         </label>
-        <div class="flex flex-col sm:flex-row gap-4 items-start">
-            <div class="flex-1 w-full border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-primary/50 rounded-2xl p-4 text-center transition-colors bg-surface-container-low">
-                <input type="file" name="image_file" id="image_file" accept="image/*"
-                    @change="handleImageChange" class="hidden" />
-                <label for="image_file" class="cursor-pointer flex flex-col items-center justify-center py-4">
-                    <span class="material-symbols-outlined text-3xl text-primary mb-2">add_photo_alternate</span>
-                    <span class="text-xs font-bold text-slate-700">Pilih Berkas Foto</span>
-                    <span class="text-[11px] text-slate-400 mt-1">Format: JPG, PNG, WEBP (Maksimal 3MB)</span>
+        <input type="file" name="image_file" id="image_file" accept="image/*"
+            @change="handleImageChange" class="hidden" />
+
+        <!-- Empty State: Full-Width Dropzone -->
+        <div x-show="!imagePreview"
+            class="w-full border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-primary/50 rounded-2xl p-6 text-center transition-all bg-surface-container-low">
+            <label for="image_file" class="cursor-pointer flex flex-col items-center justify-center py-6">
+                <span class="material-symbols-outlined text-4xl text-primary mb-2">add_photo_alternate</span>
+                <span class="text-sm font-bold text-slate-700">Pilih Berkas Foto</span>
+                <span class="text-xs text-slate-400 mt-1">Format: JPG, PNG, WEBP (Maksimal 3MB)</span>
+            </label>
+        </div>
+
+        <!-- Loaded State: Full-Width Hero Preview -->
+        <div x-show="imagePreview"
+            class="w-full h-64 sm:h-72 rounded-2xl overflow-hidden border border-slate-200 relative group bg-slate-100 shadow-sm">
+            <img :src="imagePreview" class="w-full h-full object-cover" alt="Preview Image" />
+            <div class="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-[2px]">
+                <label for="image_file"
+                    class="px-4 py-2 bg-white text-slate-800 text-xs font-bold rounded-xl shadow-md hover:bg-slate-50 cursor-pointer flex items-center gap-1.5 transition-all active:scale-95">
+                    <span class="material-symbols-outlined text-base">edit</span>
+                    <span>Ganti Foto</span>
                 </label>
+                <button type="button"
+                    @click="imagePreview = ''; $el.form.querySelector('#image_file').value = ''"
+                    class="px-4 py-2 bg-rose-600 text-white text-xs font-bold rounded-xl shadow-md hover:bg-rose-700 flex items-center gap-1.5 transition-all active:scale-95">
+                    <span class="material-symbols-outlined text-base">delete</span>
+                    <span>Hapus</span>
+                </button>
             </div>
-            <template x-if="imagePreview">
-                <div class="w-full sm:w-44 h-32 rounded-xl overflow-hidden border border-slate-200 relative group bg-slate-100 flex-shrink-0">
-                    <img :src="imagePreview" class="w-full h-full object-cover" alt="Preview Image" />
-                    <button type="button" @click="imagePreview = ''; $el.form.querySelector('#image_file').value = ''"
-                        class="absolute top-2 right-2 w-6 h-6 bg-rose-600 text-white rounded-full flex items-center justify-center text-xs opacity-90 hover:opacity-100 shadow">
-                        ✕
-                    </button>
-                </div>
-            </template>
+            <span class="absolute bottom-3 left-3 px-2.5 py-1 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold rounded-lg uppercase tracking-wider">
+                Preview Foto
+            </span>
         </div>
         @error('image_file')
             <span class="text-xs text-red-500 font-medium mt-1 block">{{ $message }}</span>
         @enderror
     </div>
 
-    <!-- 2. VIDEO INPUT SECTION -->
+    <!-- 2. VIDEO INPUT SECTION (Full-Width Unified Preview) -->
     <div x-show="mediaType === 'video'" x-cloak class="space-y-4">
         <div>
             <label class="block font-headline text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
                 Berkas Video MP4 (Maks 50MB)
             </label>
-            <div class="flex flex-col sm:flex-row gap-4 items-start">
-                <div class="flex-1 w-full border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-primary/50 rounded-2xl p-4 text-center transition-colors bg-surface-container-low">
-                    <input type="file" name="video_file" id="video_file" accept="video/mp4,video/webm,video/quicktime"
-                        @change="handleVideoChange" class="hidden" />
-                    <label for="video_file" class="cursor-pointer flex flex-col items-center justify-center py-4">
-                        <span class="material-symbols-outlined text-3xl text-primary mb-2">video_file</span>
-                        <span class="text-xs font-bold text-slate-700">Pilih Berkas Video</span>
-                        <span class="text-[11px] text-slate-400 mt-1">Format: MP4, WEBM (Maksimal 50MB)</span>
+            <input type="file" name="video_file" id="video_file" accept="video/mp4,video/webm,video/quicktime"
+                @change="handleVideoChange" class="hidden" />
+
+            <!-- Empty State: Full-Width Dropzone -->
+            <div x-show="!videoPreview"
+                class="w-full border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-primary/50 rounded-2xl p-6 text-center transition-all bg-surface-container-low">
+                <label for="video_file" class="cursor-pointer flex flex-col items-center justify-center py-6">
+                    <span class="material-symbols-outlined text-4xl text-primary mb-2">video_file</span>
+                    <span class="text-sm font-bold text-slate-700">Pilih Berkas Video</span>
+                    <span class="text-xs text-slate-400 mt-1">Format: MP4, WEBM (Maksimal 50MB)</span>
+                </label>
+            </div>
+
+            <!-- Loaded State: Full-Width Video Player -->
+            <div x-show="videoPreview"
+                class="w-full aspect-video max-h-72 rounded-2xl overflow-hidden border border-slate-800 bg-black relative group shadow-sm flex items-center justify-center">
+                <video :src="videoPreview" class="w-full h-full object-contain" controls></video>
+                <div class="absolute top-3 right-3 flex items-center gap-2 opacity-90 group-hover:opacity-100 transition-opacity">
+                    <label for="video_file"
+                        class="px-3 py-1.5 bg-white/90 hover:bg-white text-slate-800 text-xs font-bold rounded-lg shadow cursor-pointer flex items-center gap-1">
+                        <span class="material-symbols-outlined text-sm">edit</span> Ganti
                     </label>
+                    <button type="button"
+                        @click="videoPreview = ''; $el.form.querySelector('#video_file').value = ''"
+                        class="px-3 py-1.5 bg-rose-600/90 hover:bg-rose-600 text-white text-xs font-bold rounded-lg shadow flex items-center gap-1">
+                        <span class="material-symbols-outlined text-sm">delete</span> Hapus
+                    </button>
                 </div>
-                <template x-if="videoPreview">
-                    <div class="w-full sm:w-48 h-32 rounded-xl overflow-hidden border border-slate-800 bg-black relative flex-shrink-0">
-                        <video :src="videoPreview" class="w-full h-full object-cover" controls></video>
-                    </div>
-                </template>
             </div>
             @error('video_file')
                 <span class="text-xs text-red-500 font-medium mt-1 block">{{ $message }}</span>
@@ -89,7 +116,11 @@
                 <input type="file" name="thumbnail_file" id="thumbnail_file" accept="image/*"
                     @change="handleThumbChange" class="text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer" />
                 <template x-if="thumbnailPreview">
-                    <img :src="thumbnailPreview" class="w-12 h-12 object-cover rounded-lg border border-slate-200" alt="Thumb" />
+                    <div class="relative">
+                        <img :src="thumbnailPreview" class="w-12 h-12 object-cover rounded-lg border border-slate-200" alt="Thumb" />
+                        <button type="button" @click="thumbnailPreview = ''; $el.form.querySelector('#thumbnail_file').value = ''"
+                            class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-rose-600 text-white rounded-full flex items-center justify-center text-[10px]">✕</button>
+                    </div>
                 </template>
             </div>
             @error('thumbnail_file')
