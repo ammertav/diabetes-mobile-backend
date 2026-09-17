@@ -7,7 +7,7 @@
             <div class="relative w-full aspect-video rounded-xl overflow-hidden bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-inner group">
                 <!-- IMAGE -->
                 <template x-if="selectedContent.media_type === 'image' || selectedContent.media_type?.value === 'image'">
-                    <img :src="selectedContent.media_url?.startsWith('http') ? selectedContent.media_url : '/storage/' + selectedContent.media_url"
+                    <img :src="selectedContent.media_url?.startsWith('http') ? selectedContent.media_url : '/' + selectedContent.media_url"
                          class="w-full h-full object-cover" alt="Banner Image" />
                 </template>
 
@@ -15,8 +15,8 @@
                 <template x-if="selectedContent.media_type === 'video' || selectedContent.media_type?.value === 'video'">
                     <div class="w-full h-full relative bg-black flex items-center justify-center">
                         <video :key="selectedContent.id + '_' + selectedContent.media_url"
-                            :src="selectedContent.media_url?.startsWith('http') ? selectedContent.media_url : '/storage/' + selectedContent.media_url"
-                            :poster="selectedContent.thumbnail_url ? (selectedContent.thumbnail_url.startsWith('http') ? selectedContent.thumbnail_url : '/storage/' + selectedContent.thumbnail_url) : ''"
+                            :src="selectedContent.media_url?.startsWith('http') ? selectedContent.media_url : '/' + selectedContent.media_url"
+                            :poster="selectedContent.thumbnail_url ? (selectedContent.thumbnail_url.startsWith('http') ? selectedContent.thumbnail_url : '/' + selectedContent.thumbnail_url) : ''"
                             class="w-full h-full object-contain" controls preload="metadata"></video>
                     </div>
                 </template>

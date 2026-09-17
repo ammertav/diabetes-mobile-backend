@@ -26,7 +26,7 @@
                             {{ $content->title }}
                         </h4>
                         @if ($content->media_type && $content->media_type->value !== 'none')
-                            <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 flex-shrink-0" title="Tipe Media: {{ $content->media_type->label() }}">
+                            <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 shrink-0" title="Tipe Media: {{ $content->media_type->label() }}">
                                 <span class="material-symbols-outlined text-[13px]">{{ $content->media_type->icon() }}</span>
                                 <span class="uppercase tracking-wider text-[9px]">{{ $content->media_type->value }}</span>
                             </span>

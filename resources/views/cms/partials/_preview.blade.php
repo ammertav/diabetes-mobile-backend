@@ -22,11 +22,11 @@
             video_url: s.media_url?.startsWith('http') ? s.media_url : ''
         };
         this.previewImg = (this.editForm.media_type === 'image' && s.media_url)
-            ? (s.media_url.startsWith('http') ? s.media_url : '/storage/' + s.media_url) : '';
+            ? (s.media_url.startsWith('http') ? s.media_url : '/' + s.media_url) : '';
         this.previewVid = (this.editForm.media_type === 'video' && s.media_url)
-            ? (s.media_url.startsWith('http') ? s.media_url : '/storage/' + s.media_url) : '';
+            ? (s.media_url.startsWith('http') ? s.media_url : '/' + s.media_url) : '';
         this.previewThumb = s.thumbnail_url
-            ? (s.thumbnail_url.startsWith('http') ? s.thumbnail_url : '/storage/' + s.thumbnail_url) : '';
+            ? (s.thumbnail_url.startsWith('http') ? s.thumbnail_url : '/' + s.thumbnail_url) : '';
         this.activeEditField = field;
     },
     closeEdit() {
@@ -218,7 +218,7 @@
                 <!-- Display Mode -->
                 <div x-show="activeEditField !== 'body'"
                     @click="openEdit('body')"
-                    class="group bg-slate-50 p-4 rounded-xl border-l-4 border-blue-600 border-transparent hover:border-dashed hover:border-blue-400 hover:bg-blue-50/50 transition-all cursor-pointer relative">
+                    class="group bg-slate-50 p-4 rounded-xl border-l-4 border-blue-600 hover:border-dashed hover:border-blue-400 hover:bg-blue-50/50 transition-all cursor-pointer relative">
                     <div class="flex justify-between items-start">
                         <p class="text-xs text-slate-700 leading-relaxed font-body whitespace-pre-line pr-4"
                             x-text="selectedContent?.body || 'Tidak ada isi konten'">

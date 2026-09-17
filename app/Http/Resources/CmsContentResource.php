@@ -18,14 +18,14 @@ class CmsContentResource extends JsonResource
         if ($this->media_url) {
             $mediaUrl = str_starts_with($this->media_url, 'http')
                 ? $this->media_url
-                : asset('storage/'.$this->media_url);
+                : asset($this->media_url);
         }
 
         $thumbnailUrl = null;
         if ($this->thumbnail_url) {
             $thumbnailUrl = str_starts_with($this->thumbnail_url, 'http')
                 ? $this->thumbnail_url
-                : asset('storage/'.$this->thumbnail_url);
+                : asset($this->thumbnail_url);
         }
 
         return [

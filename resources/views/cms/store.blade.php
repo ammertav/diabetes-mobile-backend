@@ -24,9 +24,9 @@
                 enctype="multipart/form-data"
                 x-data="{
                     mediaType: '{{ old('media_type', $content->media_type->value ?? 'image') }}',
-                    imagePreview: '{{ $content && $content->media_type === \App\Enums\CmsMediaType::Image && $content->media_url ? asset('storage/' . $content->media_url) : '' }}',
-                    videoPreview: '{{ $content && $content->media_type === \App\Enums\CmsMediaType::Video && $content->media_url ? asset('storage/' . $content->media_url) : '' }}',
-                    thumbnailPreview: '{{ $content && $content->thumbnail_url ? (str_starts_with($content->thumbnail_url, 'http') ? $content->thumbnail_url : asset('storage/' . $content->thumbnail_url)) : '' }}',
+                    imagePreview: '{{ $content && $content->media_type === \App\Enums\CmsMediaType::Image && $content->media_url ? asset($content->media_url) : '' }}',
+                    videoPreview: '{{ $content && $content->media_type === \App\Enums\CmsMediaType::Video && $content->media_url ? asset($content->media_url) : '' }}',
+                    thumbnailPreview: '{{ $content && $content->thumbnail_url ? (str_starts_with($content->thumbnail_url, 'http') ? $content->thumbnail_url : asset($content->thumbnail_url)) : '' }}',
                     youtubeUrl: '{{ old('video_url', $content && $content->media_type === \App\Enums\CmsMediaType::Youtube ? $content->media_url : '') }}',
                     youtubeId: '{{ $content->youtube_id ?? '' }}',
                     handleImageChange(e) {

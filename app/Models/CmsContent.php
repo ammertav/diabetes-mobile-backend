@@ -5,9 +5,16 @@ namespace App\Models;
 use App\Enums\CmsContentType;
 use App\Enums\CmsDayContext;
 use App\Enums\CmsMediaType;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @mixin Builder
+ *
+ * @method bool delete()
+ * @method bool update(array $attributes = [], array $options = [])
+ */
 class CmsContent extends Model
 {
     use HasUuids;

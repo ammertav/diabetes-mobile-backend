@@ -17,8 +17,8 @@ class DeleteCmsContentAction
 
     private function deleteLocalFile(?string $path): void
     {
-        if ($path && ! str_starts_with($path, 'http') && Storage::disk('public')->exists($path)) {
-            Storage::disk('public')->delete($path);
+        if ($path && ! str_starts_with($path, 'http') && Storage::disk('cms')->exists($path)) {
+            Storage::disk('cms')->delete($path);
         }
     }
 }

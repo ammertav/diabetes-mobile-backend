@@ -73,7 +73,7 @@ class UpdateCmsContentAction
         $url = $content->media_url;
         if ($image) {
             $this->deleteLocalFile($content->media_url);
-            $url = $image->store('cms/images', 'public');
+            $url = $image->store('cms/images', 'cms');
         }
         $this->deleteLocalFile($content->thumbnail_url);
 
@@ -85,13 +85,13 @@ class UpdateCmsContentAction
         $mediaUrl = $content->media_url;
         if ($video) {
             $this->deleteLocalFile($content->media_url);
-            $mediaUrl = $video->store('cms/videos', 'public');
+            $mediaUrl = $video->store('cms/videos', 'cms');
         }
 
         $thumbUrl = $content->thumbnail_url;
         if ($thumb) {
             $this->deleteLocalFile($content->thumbnail_url);
-            $thumbUrl = $thumb->store('cms/thumbnails', 'public');
+            $thumbUrl = $thumb->store('cms/thumbnails', 'cms');
         }
 
         return ['media_url' => $mediaUrl, 'youtube_id' => null, 'thumbnail_url' => $thumbUrl];
@@ -105,7 +105,7 @@ class UpdateCmsContentAction
 
         if ($thumb) {
             $this->deleteLocalFile($content->thumbnail_url);
-            $thumbUrl = $thumb->store('cms/thumbnails', 'public');
+            $thumbUrl = $thumb->store('cms/thumbnails', 'cms');
         } elseif (! $thumbUrl && $ytId) {
             $thumbUrl = CmsMediaType::getYoutubeThumbnailUrl($ytId);
         }
@@ -115,8 +115,8 @@ class UpdateCmsContentAction
 
     private function deleteLocalFile(?string $path): void
     {
-        if ($path && ! str_starts_with($path, 'http') && Storage::disk('public')->exists($path)) {
-            Storage::disk('public')->delete($path);
+        if ($path && ! str_starts_with($path, 'http') && Storage::disk('cms')->exists($path)) {
+            Storage::disk('cms')->delete($path);
         }
     }
 }

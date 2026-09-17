@@ -9,14 +9,16 @@ use App\Models\AdminProfile;
 use App\Models\CmsContent;
 use App\Models\User;
 use App\Utilities\JwtUtility;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Tests\TestCase;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    /** @var TestCase $this */
     $this->admin = User::create([
         'email' => 'admin@example.com',
         'type' => UserType::ADMIN,
@@ -111,7 +113,7 @@ test('admin can store new cms content', function () {
 });
 
 test('admin can update existing cms content', function () {
-    $content = CmsContent::first();
+    $content = CmsContent::query()->first();
 
     /** @var TestCase $this */
     $response = $this->actingAs($this->admin)->put("/cms/{$content->id}", [
@@ -134,7 +136,7 @@ test('admin can update existing cms content', function () {
 });
 
 test('admin can delete cms content', function () {
-    $content = CmsContent::first();
+    $content = CmsContent::query()->first();
 
     /** @var TestCase $this */
     $response = $this->actingAs($this->admin)->delete("/cms/{$content->id}");
@@ -148,7 +150,7 @@ test('admin can delete cms content', function () {
 });
 
 test('admin can upload image to cms content', function () {
-    Storage::fake('public');
+    Storage::fake('cms');
     $image = UploadedFile::fake()->image('banner.jpg', 600, 400);
 
     /** @var TestCase $this */
@@ -162,16 +164,18 @@ test('admin can upload image to cms content', function () {
     ]);
 
     $response->assertRedirect('/cms');
-    $content = CmsContent::where('title', 'Edukasi Bergambar')->first();
+    $content = CmsContent::query()->where('title', 'Edukasi Bergambar')->first();
     expect($content)->not->toBeNull()
         ->and($content->media_type)->toBe(CmsMediaType::Image)
         ->and($content->media_url)->not->toBeNull();
 
-    Storage::disk('public')->assertExists($content->media_url);
+    /** @var FilesystemAdapter $disk */
+    $disk = Storage::disk('cms');
+    $disk->assertExists($content->media_url);
 });
 
 test('admin can upload video under 50mb with custom thumbnail', function () {
-    Storage::fake('public');
+    Storage::fake('cms');
     $video = UploadedFile::fake()->create('workout.mp4', 35000, 'video/mp4');
     $thumb = UploadedFile::fake()->image('thumb.jpg', 400, 300);
 
@@ -187,18 +191,20 @@ test('admin can upload video under 50mb with custom thumbnail', function () {
     ]);
 
     $response->assertRedirect('/cms');
-    $content = CmsContent::where('title', 'Video Workout Diabetes')->first();
+    $content = CmsContent::query()->where('title', 'Video Workout Diabetes')->first();
     expect($content)->not->toBeNull()
         ->and($content->media_type)->toBe(CmsMediaType::Video)
         ->and($content->media_url)->not->toBeNull()
         ->and($content->thumbnail_url)->not->toBeNull();
 
-    Storage::disk('public')->assertExists($content->media_url);
-    Storage::disk('public')->assertExists($content->thumbnail_url);
+    /** @var FilesystemAdapter $disk */
+    $disk = Storage::disk('cms');
+    $disk->assertExists($content->media_url);
+    $disk->assertExists($content->thumbnail_url);
 });
 
 test('admin cannot upload video exceeding 50mb', function () {
-    Storage::fake('public');
+    Storage::fake('cms');
     $largeVideo = UploadedFile::fake()->create('heavy.mp4', 55000, 'video/mp4');
 
     /** @var TestCase $this */
@@ -226,7 +232,7 @@ test('admin can save youtube link with auto-extracted id and thumbnail', functio
     ]);
 
     $response->assertRedirect('/cms');
-    $content = CmsContent::where('title', 'Video Edukasi YouTube')->first();
+    $content = CmsContent::query()->where('title', 'Video Edukasi YouTube')->first();
     expect($content)->not->toBeNull()
         ->and($content->media_type)->toBe(CmsMediaType::Youtube)
         ->and($content->youtube_id)->toBe('dQw4w9WgXcQ')
@@ -244,15 +250,15 @@ test('admin can create content with media type none', function () {
     ]);
 
     $response->assertRedirect('/cms');
-    $content = CmsContent::where('title', 'Teks Motivasi Murni')->first();
+    $content = CmsContent::query()->where('title', 'Teks Motivasi Murni')->first();
     expect($content->media_type)->toBe(CmsMediaType::None)
         ->and($content->media_url)->toBeNull();
 });
 
 test('mobile api returns media payload with full url', function () {
-    Storage::fake('public');
+    Storage::fake('cms');
     $image = UploadedFile::fake()->image('banner.jpg');
-    $path = $image->store('cms/images', 'public');
+    $path = $image->store('cms/images', 'cms');
 
     CmsContent::create([
         'title' => 'Konten Dengan Media API',
