@@ -73,7 +73,7 @@ class UpdateCmsContentAction
         $url = $content->media_url;
         if ($image) {
             $this->deleteLocalFile($content->media_url);
-            $url = $image->store('cms/images', 'cms');
+            $url = $image->store('uploads/cms/images', 'cms');
         }
         $this->deleteLocalFile($content->thumbnail_url);
 
@@ -85,13 +85,13 @@ class UpdateCmsContentAction
         $mediaUrl = $content->media_url;
         if ($video) {
             $this->deleteLocalFile($content->media_url);
-            $mediaUrl = $video->store('cms/videos', 'cms');
+            $mediaUrl = $video->store('uploads/cms/videos', 'cms');
         }
 
         $thumbUrl = $content->thumbnail_url;
         if ($thumb) {
             $this->deleteLocalFile($content->thumbnail_url);
-            $thumbUrl = $thumb->store('cms/thumbnails', 'cms');
+            $thumbUrl = $thumb->store('uploads/cms/thumbnails', 'cms');
         }
 
         return ['media_url' => $mediaUrl, 'youtube_id' => null, 'thumbnail_url' => $thumbUrl];
@@ -105,7 +105,7 @@ class UpdateCmsContentAction
 
         if ($thumb) {
             $this->deleteLocalFile($content->thumbnail_url);
-            $thumbUrl = $thumb->store('cms/thumbnails', 'cms');
+            $thumbUrl = $thumb->store('uploads/cms/thumbnails', 'cms');
         } elseif (! $thumbUrl && $ytId) {
             $thumbUrl = CmsMediaType::getYoutubeThumbnailUrl($ytId);
         }

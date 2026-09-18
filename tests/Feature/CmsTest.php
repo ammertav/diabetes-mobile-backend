@@ -258,7 +258,7 @@ test('admin can create content with media type none', function () {
 test('mobile api returns media payload with full url', function () {
     Storage::fake('cms');
     $image = UploadedFile::fake()->image('banner.jpg');
-    $path = $image->store('cms/images', 'cms');
+    $path = $image->store('uploads/cms/images', 'cms');
 
     CmsContent::create([
         'title' => 'Konten Dengan Media API',

@@ -45,18 +45,18 @@ class CreateCmsContentAction
         ?UploadedFile $thumb
     ): array {
         if ($type === CmsMediaType::Image && $image) {
-            return [$image->store('cms/images', 'cms'), null, null];
+            return [$image->store('uploads/cms/images', 'cms'), null, null];
         }
 
         if ($type === CmsMediaType::Video && $video) {
-            $thumbPath = $thumb ? $thumb->store('cms/thumbnails', 'cms') : null;
+            $thumbPath = $thumb ? $thumb->store('uploads/cms/thumbnails', 'cms') : null;
 
-            return [$video->store('cms/videos', 'cms'), null, $thumbPath];
+            return [$video->store('uploads/cms/videos', 'cms'), null, $thumbPath];
         }
 
         if ($type === CmsMediaType::Youtube && $videoUrl) {
             $ytId = CmsMediaType::parseYoutubeId($videoUrl);
-            $thumbPath = $thumb ? $thumb->store('cms/thumbnails', 'cms') : CmsMediaType::getYoutubeThumbnailUrl($ytId);
+            $thumbPath = $thumb ? $thumb->store('uploads/cms/thumbnails', 'cms') : CmsMediaType::getYoutubeThumbnailUrl($ytId);
 
             return [$videoUrl, $ytId, $thumbPath];
         }
